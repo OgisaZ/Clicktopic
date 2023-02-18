@@ -1,0 +1,78 @@
+@font-face {
+  font-family: Boldena;
+  src: url(Boldena.ttf);
+}
+.boldena-font {
+  font-family: Boldena;
+}
+.cookies {
+  font-size: 25px;
+}
+.cookie-button {
+  font-size: 25px;
+  border-radius: 5rem;
+  height: 12rem;
+  width: 12rem;
+  background-color: #9a0000;
+  box-shadow: 0 9px #999;
+}
+.cookie-button:hover {
+  background-color: #800000;
+}
+.cookie-button:active {
+  background-color: #810000;
+  box-shadow: 0 5px #666;
+  transform: translateY(2px);
+}
+.property-align {
+  margin: auto;
+  width: 60%;
+  padding: 10px;
+}
+.buying {
+  width: auto;
+  border-radius: 50px;
+  border-color: gainsboro;
+  box-shadow: 0 3px #999;
+}
+.inline-div {
+  display: inline;
+}
+.history-text {
+  display: inline-block;
+  height: 100px;
+  width: 200px;
+  padding: 25px;
+  opacity: 0;
+  transition: opacity 1s;
+}
+#factory {
+  color: #33334d;
+}
+#clickMultiplier {
+  color: #995e4f;
+}
+#farm-name {
+  opacity: 0.3;
+  transition: opacity ease-out 0.5s;
+  border-radius: 3rem;
+  background-color: rgba(250, 235, 215, 0.514);
+  width: 20rem;
+  height: 3rem;
+  text-align: center;
+  font-size: 2rem;
+  font-family: Boldena;
+  margin-top: 3rem;
+  outline: none;
+}
+#farm-name-button {
+  opacity: 0;
+}
+#farm-name:hover {
+  opacity: 1;
+  transition: 0.5s;
+}
+#farm-name:focus {
+  opacity: 1;
+  transition: 0.5s;
+}
