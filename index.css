@@ -5,10 +5,10 @@
 .boldena-font {
   font-family: Boldena;
 }
-.cookies {
+.gold {
   font-size: 25px;
 }
-.cookie-button {
+.gold-button {
   font-size: 25px;
   border-radius: 5rem;
   height: 12rem;
@@ -16,10 +16,10 @@
   background-color: #9a0000;
   box-shadow: 0 9px #999;
 }
-.cookie-button:hover {
+.gold-button:hover {
   background-color: #800000;
 }
-.cookie-button:active {
+.gold-button:active {
   background-color: #810000;
   box-shadow: 0 5px #666;
   transform: translateY(2px);
@@ -46,7 +46,19 @@
   opacity: 0;
   transition: opacity 1s;
 }
-#factory {
+.chests {
+  padding: 25px;
+  width: auto;
+  font-size: medium;
+}
+.items {
+  position: absolute;
+  left: 30%;
+}
+#items-list {
+  font-size: 25px;
+}
+#survivor {
   color: #33334d;
 }
 #clickMultiplier {
@@ -64,6 +76,7 @@
   font-family: Boldena;
   margin-top: 3rem;
   outline: none;
+  color: black;
 }
 #farm-name-button {
   opacity: 0;
