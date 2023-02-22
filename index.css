@@ -15,14 +15,17 @@
   width: 12rem;
   background-color: #9a0000;
   box-shadow: 0 9px #999;
+  transition: 0.3s;
 }
 .gold-button:hover {
   background-color: #800000;
+  transition: 0.5s;
 }
 .gold-button:active {
   background-color: #810000;
   box-shadow: 0 5px #666;
-  transform: translateY(2px);
+  transform: translateY(5px);
+  transition: 0.1s;
 }
 .property-align {
   margin: auto;
@@ -34,6 +37,11 @@
   border-radius: 50px;
   border-color: gainsboro;
   box-shadow: 0 3px #999;
+  transition: 0.5s;
+}
+.buying:hover {
+  border-color: #666;
+  transition: 0.5s;
 }
 .inline-div {
   display: inline;
@@ -54,6 +62,11 @@
 .items {
   position: absolute;
   left: 30%;
+}
+.crit-text {
+  opacity: 0;
+  color: red;
+  transition: 0.5s;
 }
 #items-list {
   font-size: 25px;

@@ -6,7 +6,8 @@ const labelHistoryText = document.querySelector(`.history-text`);
 const labelItemList = document.getElementById(`items-list`);
 //Inputs
 const inputFarmName = document.getElementById(`farm-name`);
-
+//Get the farm name from localStorage
+inputFarmName.value = localStorage.getItem(`farmName`);
 //Buttons
 const btngold = document.querySelector(`.gold-button`);
 const btnFarmName = document.getElementById(`farm-name-button`);
@@ -16,10 +17,7 @@ const btnClickMultiplier = document.getElementById(`clickMultiplier`);
 const btnsurvivor = document.getElementById(`survivor`);
 //Get cash from localStorage if exists (|| if it doesn't)
 let gold = Number(localStorage?.getItem(`gold`)) || 0;
-
 const inventory = JSON.parse(localStorage.getItem(`inventory`)) || [];
-const inventoryUnique = new Set(inventory);
-
 const items = [
   `Soldier's Syringe`,
   `Lens Maker`,
@@ -31,16 +29,21 @@ const counts =
   JSON.parse(localStorage.getItem(`counts`)) || new Array(items.length).fill(0);
 const enemies = [`Lesser Wisp`, `Beetle`, `Lemurian`, `Stone Golem`];
 let enemyHealth;
+let enemyMaxHealth;
 let randomNumber;
+let rollOfPenniesBuff = Number(localStorage.getItem(`rollOfPenniesBuff`)) || 0;
+let crowbarBuff = counts[4] * 0.5 + 1;
 const randomItemNumber = () => Math.trunc(Math.random() * items.length);
 //Get the object from localStorage if exists (|| if it doesn't)
 //property:[cost,how many you have, how much this property has made]
 const properties = JSON.parse(localStorage.getItem(`properties`)) || {
-  survivor: [20, 0, 0],
+  survivor: [20, 0, 0.001, 0],
   clickMultiplier: [40, 1, 0],
   chests: [10, 0, 0],
 };
-
+let idleGold = Number(localStorage?.getItem(`idleGold`)) || 0;
+let damageOnClick = properties.clickMultiplier[1];
+console.log(damageOnClick);
 //Have only one decimal place
 labelgoldNumber.textContent = gold.toFixed(1);
 
@@ -55,6 +58,7 @@ String.prototype.replaceAt = function (index, replacement) {
 function enemyPicker() {
   randomNumber = Math.trunc(Math.random() * enemies.length);
   enemyHealth = (randomNumber + 1) * 5;
+  enemyMaxHealth = enemyHealth;
   const randomEnemy = enemies[randomNumber];
   btngold.value = `${randomEnemy} \n`;
 }
@@ -69,36 +73,40 @@ function updateHistoryText(string) {
     }, 500);
   }
 }
+function updateIdleGold() {
+  idleGold = properties.survivor[2] * properties.survivor[1];
+  idleGold =
+    idleGold + properties.clickMultiplier[2] * properties.clickMultiplier[1];
+  localStorage.setItem(`idleGold`, idleGold);
+}
 
 function updategoldCount() {
   //Every 33 milliseconds (around 30 frames per second)
-  setInterval(function () {
-    //Add the current gold to localStorage
-    localStorage.setItem(`gold`, gold);
-
-    //Set the text to be fixed to have 1 decimal place
-    labelgoldNumber.textContent = gold.toFixed(1);
-
-    //Add the current properties object to localStorage
-    localStorage.setItem(`properties`, JSON.stringify(properties));
-
-    //And add gold for each property per 33 milsec
-    gold = gold + properties.survivor[1] * 0.001;
-    enemyHealth = enemyHealth - properties.survivor[1] * 0.001;
-    if (enemyHealth <= 0) {
-      gold = gold + (randomNumber + 1) * 2.5;
-      updateHistoryText((randomNumber + 1) * 2.5);
-      enemyPicker();
-    } else {
-      btngold.value = `${enemies[randomNumber]}\nHealth:${enemyHealth.toFixed(
-        1
-      )}`;
-    }
-  }, 33);
-
-  //Get the farm name from localStorage
-  inputFarmName.value = localStorage.getItem(`farmName`);
+  //Add the current gold to localStorage
+  localStorage.setItem(`gold`, gold);
+  //Set the text to be fixed to have 1 decimal place
+  labelgoldNumber.textContent = gold.toFixed(1);
+  //Add the current properties object to localStorage
+  localStorage.setItem(`properties`, JSON.stringify(properties));
+  //And add gold for each property per 33 milsec
+  gold = gold + idleGold;
+  if (enemyHealth <= 0) {
+    gold = gold + (randomNumber + 1) * (2.5 + rollOfPenniesBuff);
+    updateHistoryText(
+      ((randomNumber + 1) * (2.5 + rollOfPenniesBuff)).toFixed(2)
+    );
+    enemyPicker();
+  } else {
+    btngold.value = `${enemies[randomNumber]}\nHealth:${enemyHealth.toFixed(
+      1
+    )}`;
+  }
 }
+
+function automatedDamage() {
+  enemyHealth = enemyHealth - idleGold;
+}
+
 function updateButtonValues() {
   //Update survivor numbers
   btnsurvivor.value = `Buy survivor(${properties.survivor[1].toFixed(
@@ -115,12 +123,13 @@ function updateButtonValues() {
 
   labelItemList.textContent = localStorage.getItem(`inventoryText`);
 }
-
+//TODO
 // localStorage.clear(`gold`);
 // Call them instantly
 enemyPicker();
 updateButtonValues();
-updategoldCount();
+let updategoldCountInterval = setInterval(updategoldCount, 33);
+let automatedDamageInterval = setInterval(automatedDamage, 33);
 
 function updatePrice(property) {
   //Locate the current price of property
@@ -145,24 +154,48 @@ function numberOfItems(item) {
       labelItemList.textContent[labelItemList.textContent.indexOf(item) - 3]
     );
     let whereThatItemIsLocated = labelItemList.textContent.indexOf(item) - 3;
-    labelItemList.textContent = labelItemList.textContent.replaceAt(
-      whereThatItemIsLocated,
-      whatNumberYouCurrentlyHave + 1
-    );
+    if (counts[whereIsItem] >= 10) {
+      labelItemList.textContent = labelItemList.textContent
+        ?.replaceAt(whereThatItemIsLocated, String(counts[whereIsItem])[1])
+        ?.replaceAt(whereThatItemIsLocated - 1, String(counts[whereIsItem])[0]);
+    } else if (counts[whereIsItem] < 10 && counts[whereIsItem] > 1) {
+      labelItemList.textContent = labelItemList.textContent.replaceAt(
+        whereThatItemIsLocated,
+        whatNumberYouCurrentlyHave + 1
+      );
+    }
   } else {
     labelItemList.textContent += `${
       inventory.filter(mov => mov === `${item}`).length + 1
-    }x ${item},`;
+    }x ${item}, `;
   }
 
   return Number(counts[whereIsItem]);
 }
-
 //Clicking the button, adds a gold
 btngold.addEventListener(`click`, function () {
-  gold = gold + properties.clickMultiplier[1];
-  enemyHealth =
-    enemyHealth.toFixed(1) - properties.clickMultiplier[1].toFixed(1);
+  if (inventory.includes(`Crowbar`)) {
+    if (enemyHealth >= enemyMaxHealth * 0.9) {
+      damageOnClick = damageOnClick * crowbarBuff;
+      damageOnClick = properties.clickMultiplier[1];
+    } else {
+      damageOnClick = properties.clickMultiplier[1];
+    }
+  }
+  if (inventory.includes(`Lens Maker`)) {
+    const chance = counts[1] * 0.1;
+    if (chance >= Math.random()) {
+      document.querySelector(`.crit-text`).style.opacity = 1;
+      setTimeout(
+        e => (document.querySelector(`.crit-text`).style.opacity = 0),
+        500
+      );
+      gold = gold + damageOnClick;
+      enemyHealth = enemyHealth.toFixed(1) - damageOnClick.toFixed(1);
+    }
+  }
+  gold = gold + damageOnClick;
+  enemyHealth = enemyHealth.toFixed(1) - damageOnClick.toFixed(1);
 });
 
 //Buying the survivor button
@@ -173,9 +206,10 @@ btnsurvivor.addEventListener(`click`, function (e) {
     gold = gold - properties.survivor[0];
 
     //Add the property to the object
-    properties.survivor[1] = properties.survivor.at(1) + 1;
+    properties.survivor[1] = properties.survivor[1] + 1;
 
     //Oh boy
+    updateIdleGold();
     updatePrice(`survivor`);
     updateHistoryText(`survivor`);
     btnsurvivor.value = `Buy survivor(${properties.survivor[1].toFixed(
@@ -189,7 +223,7 @@ btnClickMultiplier.addEventListener(`click`, function () {
     gold = gold - properties.clickMultiplier[0];
 
     properties.clickMultiplier[1] = properties.clickMultiplier[1] + 0.2;
-
+    updateIdleGold();
     updatePrice(`clickMultiplier`);
     btnClickMultiplier.value = `Buy click multiplier (${properties.clickMultiplier[1].toFixed(
       1
@@ -222,11 +256,50 @@ btnChests.addEventListener(`click`, function (e) {
     btnChests.value = `Buy chest\n ${properties.chests[0].toFixed(1)}`;
     numberOfItems(randomItem);
     inventory.push(randomItem);
-    inventoryUnique.add(randomItem);
 
     localStorage.setItem(`inventory`, JSON.stringify(inventory));
     localStorage.setItem(`counts`, JSON.stringify(counts));
     localStorage.setItem(`inventoryText`, labelItemList.textContent);
     updateHistoryText(randomItem);
+    itemFunctions(randomItem);
   }
 });
+
+//ITEMS
+const triTipInterval = setInterval(itemFunctions, 500, `Tri-tip Dagger`);
+
+function itemFunctions(item) {
+  switch (item) {
+    case `Soldier's Syringe`:
+      for (const mov in properties) {
+        if (properties[mov][2] > 0) {
+          properties[mov][2] =
+            properties[mov][2].toFixed(3) * 0.05 + properties[mov][2];
+        }
+      }
+      updateIdleGold();
+      break;
+    case `Tri-tip Dagger`:
+      const chance = counts[2] * 0.05;
+      const currentIdleGold = idleGold;
+      if (chance >= Math.random()) {
+        idleGold = idleGold * 2;
+        setTimeout(e => {
+          idleGold = currentIdleGold;
+          updateIdleGold();
+        }, 1000);
+      }
+
+      break;
+    case `Roll of Pennies`:
+      rollOfPenniesBuff = 2.5 * 0.005 + rollOfPenniesBuff;
+      rollOfPenniesBuff = Number(rollOfPenniesBuff.toFixed(4));
+      localStorage.setItem(`rollOfPenniesBuff`, rollOfPenniesBuff);
+      break;
+    case `Crowbar`:
+      crowbarBuff = counts[4] * 0.5 + 1;
+      break;
+    default:
+      break;
+  }
+}
