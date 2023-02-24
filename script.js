@@ -4,6 +4,8 @@
 const labelgoldNumber = document.querySelector(`.gold`);
 const labelHistoryText = document.querySelector(`.history-text`);
 const labelItemList = document.getElementById(`items-list`);
+const labelEnemyLevel = document.getElementById(`enemy-level`);
+const labelToolTip = document.querySelector(`.tool-tip-level`);
 //Inputs
 const inputFarmName = document.getElementById(`farm-name`);
 //Get the farm name from localStorage
@@ -27,9 +29,36 @@ const items = [
 ];
 const counts =
   JSON.parse(localStorage.getItem(`counts`)) || new Array(items.length).fill(0);
-const enemies = [`Lesser Wisp`, `Beetle`, `Lemurian`, `Stone Golem`];
+const enemies = [
+  `Lesser Wisp`, //3 hp
+  `Jellyfish`, //6 hp
+  `Vermin`, //9 hp
+  `Alpha Construct`, //12 hp
+  `Beetle`, //15 hp
+  `Blind Pest`, //18 hp
+  `Lemurian`, //21 hp
+  `Imp`, //24 hp
+  `Vulture`, //27 hp
+  `Stone Golem`, //30 hp
+  `Mini Mushrum`, //33 hp
+  `Brass Contraption`, //36 hp
+  `Beetle Guard`, //39 hp
+  `Bison`, //42 hp
+  `Greater Wisp`, //45 hp
+  `Gup`, //48 hp
+  `Clay Templar`, //51 hp
+  `Elder Lemurian`, //54 hp
+  //Ovi gore su svi hp na level 1, ovako se scaluje hp sa levelima:
+  //enemyHealth = (gde se nalaze u array(npr wisp je 1)) * 2.5 * (enemyLevel * 1.2);
+  //Znaci wisp se nalazi na poziciji 1, znaci 1 * 2.5 = 2.5 i ako je level 1   2.5* 1.2 = 3 hp
+];
 let enemyHealth;
 let enemyMaxHealth;
+let enemyKillCount = Number(localStorage.getItem(`enemyKillCount`)) || 0;
+let enemyLevel = Number(localStorage.getItem(`enemyLevel`)) || 1;
+let nextLevelReq;
+let nextLevelReqText;
+let enemyGoldOnKill = enemyLevel * 1.5;
 let randomNumber;
 let rollOfPenniesBuff = Number(localStorage.getItem(`rollOfPenniesBuff`)) || 0;
 let crowbarBuff = counts[4] * 0.5 + 1;
@@ -43,9 +72,10 @@ const properties = JSON.parse(localStorage.getItem(`properties`)) || {
 };
 let idleGold = Number(localStorage?.getItem(`idleGold`)) || 0;
 let damageOnClick = properties.clickMultiplier[1];
-console.log(damageOnClick);
+
 //Have only one decimal place
 labelgoldNumber.textContent = gold.toFixed(1);
+labelEnemyLevel.textContent = enemyLevel;
 
 String.prototype.replaceAt = function (index, replacement) {
   if (index >= this.length) {
@@ -55,9 +85,31 @@ String.prototype.replaceAt = function (index, replacement) {
   return this.substring(0, index) + replacement + this.substring(index + 1);
 };
 
+function enemyLevelUp() {
+  if (enemyLevel >= 15) {
+    //Requirement za sledeci level je (ako je level >= od 15)
+    nextLevelReq = enemyLevel * 3 + 20;
+  } else {
+    //Requirement za sledeci level je
+    nextLevelReq = enemyLevel * 2 + 10;
+  }
+  if (enemyKillCount === nextLevelReq) {
+    enemyLevel++;
+    console.log(`Level up! Now enemies are level ${enemyLevel}`);
+    labelEnemyLevel.textContent = enemyLevel;
+    enemyKillCount = 0;
+    // enemyHealth = enemyHealth * (enemyLevel * 1.2);
+    enemyGoldOnKill = enemyLevel * 3;
+  }
+  localStorage.setItem(`enemyLevel`, enemyLevel);
+  localStorage.setItem(`enemyKillCount`, enemyKillCount);
+  nextLevelReqText = nextLevelReq - enemyKillCount;
+  labelToolTip.textContent = `Kills required for next level:${nextLevelReqText}`;
+}
+
 function enemyPicker() {
   randomNumber = Math.trunc(Math.random() * enemies.length);
-  enemyHealth = (randomNumber + 1) * 5;
+  enemyHealth = (randomNumber + 1) * 2.5 * (enemyLevel * 1.2);
   enemyMaxHealth = enemyHealth;
   const randomEnemy = enemies[randomNumber];
   btngold.value = `${randomEnemy} \n`;
@@ -91,18 +143,20 @@ function updategoldCount() {
   //And add gold for each property per 33 milsec
   gold = gold + idleGold;
   if (enemyHealth <= 0) {
-    gold = gold + (randomNumber + 1) * (2.5 + rollOfPenniesBuff);
+    gold = gold + (randomNumber + 1) * (enemyGoldOnKill + rollOfPenniesBuff);
     updateHistoryText(
-      ((randomNumber + 1) * (2.5 + rollOfPenniesBuff)).toFixed(2)
+      ((randomNumber + 1) * (enemyGoldOnKill + rollOfPenniesBuff)).toFixed(2)
     );
+    enemyKillCount++;
+
     enemyPicker();
+    enemyLevelUp();
   } else {
     btngold.value = `${enemies[randomNumber]}\nHealth:${enemyHealth.toFixed(
       1
     )}`;
   }
 }
-
 function automatedDamage() {
   enemyHealth = enemyHealth - idleGold;
 }
@@ -126,8 +180,10 @@ function updateButtonValues() {
 //TODO
 // localStorage.clear(`gold`);
 // Call them instantly
+enemyLevelUp();
 enemyPicker();
 updateButtonValues();
+updateIdleGold();
 let updategoldCountInterval = setInterval(updategoldCount, 33);
 let automatedDamageInterval = setInterval(automatedDamage, 33);
 
@@ -177,7 +233,6 @@ btngold.addEventListener(`click`, function () {
   if (inventory.includes(`Crowbar`)) {
     if (enemyHealth >= enemyMaxHealth * 0.9) {
       damageOnClick = damageOnClick * crowbarBuff;
-      damageOnClick = properties.clickMultiplier[1];
     } else {
       damageOnClick = properties.clickMultiplier[1];
     }
@@ -196,6 +251,7 @@ btngold.addEventListener(`click`, function () {
   }
   gold = gold + damageOnClick;
   enemyHealth = enemyHealth.toFixed(1) - damageOnClick.toFixed(1);
+  damageOnClick = properties.clickMultiplier[1];
 });
 
 //Buying the survivor button

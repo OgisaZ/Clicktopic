@@ -102,3 +102,34 @@
   opacity: 1;
   transition: 0.5s;
 }
+#enemy-level {
+  font-size: 25px;
+  margin-left: 2%;
+}
+.tool-tip-level {
+  font-size: 15px;
+}
+.tooltip {
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dottet black;
+}
+.tooltip .tooltiptext {
+  opacity: 0;
+  transition: opacity 0.5s;
+  width: 120px;
+  background-color: rgba(184, 171, 171, 0.575);
+  color: black;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 6px;
+
+  position: absolute;
+  z-index: 1;
+  top: -5px;
+  left: 105%;
+}
+
+.tooltip:hover .tooltiptext {
+  opacity: 1;
+}
