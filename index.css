@@ -74,6 +74,10 @@
 #survivor {
   color: #33334d;
 }
+#drone {
+  opacity: 0;
+  color: cadetblue;
+}
 #clickMultiplier {
   color: #995e4f;
 }
