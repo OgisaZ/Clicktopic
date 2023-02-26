@@ -89,7 +89,7 @@ const properties = JSON.parse(localStorage.getItem(`properties`)) || {
 //Get idle gold from localStorage. Will explain how it is calculated it its function
 let idleGold = Number(localStorage?.getItem(`idleGold`)) || 0;
 //How much damage you deal on click. Mostly used with crowbar calculations
-let damageOnClick = properties.clickMultiplier[1];
+let damageOnClick = properties.clickMultiplier[1] + enemyLevel;
 
 //Display on screen
 labelgoldNumber.textContent = gold.toFixed(1);
@@ -108,9 +108,11 @@ function enemyLevelUp() {
   if (enemyLevel >= 15) {
     //Requirement for next enemy level is:
     nextLevelReq = enemyLevel * 3 + 20;
+    enemyGoldOnKill = enemyLevel * 3.5;
   } else {
     //Requirement for next enemy level is:
     nextLevelReq = enemyLevel * 2 + 10;
+    enemyGoldOnKill = enemyLevel * 3;
   }
   //If you kill enough enemies:
   if (enemyKillCount === nextLevelReq) {
@@ -121,7 +123,8 @@ function enemyLevelUp() {
     //Set the kill count back to 0
     enemyKillCount = 0;
     //Get more gold on kill
-    enemyGoldOnKill = enemyLevel * 3;
+
+    updateHistoryText(`LEVEL UP! Now level ${enemyLevel}`);
   }
   //Add stuff to localStorage
   localStorage.setItem(`enemyLevel`, enemyLevel);
@@ -193,7 +196,7 @@ function updategoldCount() {
       1
     )}`;
   }
-  if (gold >= 200 || properties.drone[1] >= 1) {
+  if (gold >= 200 || properties.drone[1] >= 1 || btnDrone.style.opacity === 1) {
     btnDrone.style.opacity = 1;
   }
 }
@@ -206,18 +209,18 @@ function updateButtonValues() {
   //Update survivor numbers
   btnsurvivor.value = `Buy survivor(${properties.survivor[1].toFixed(
     1
-  )}) \n ${properties.survivor[0].toFixed(1)}`;
-  btnDrone.value = `Buy drone(${
-    properties.drone[1]
-  })\n${properties.drone[0].toFixed(1)}`;
+  )}) \n $${properties.survivor[0].toFixed(1)}`;
+  btnDrone.value = `Buy drone(${properties.drone[1].toFixed(
+    1
+  )})\n$${properties.drone[0].toFixed(1)}`;
 
   //Update gold multiplier numbers
   btnClickMultiplier.value = `Buy click multiplier(${properties.clickMultiplier[1].toFixed(
     1
-  )}) \n ${properties.clickMultiplier[0].toFixed(1)}`;
+  )}) \n $${properties.clickMultiplier[0].toFixed(1)}`;
 
   //Update chest numbers
-  btnChests.value = `Buy chest\n ${properties.chests[0].toFixed(1)}`;
+  btnChests.value = `Buy chest\n $${properties.chests[0].toFixed(1)}`;
 
   //Probably shouldn't of named it inventoryText
   labelItemList.textContent = localStorage.getItem(`inventoryText`);
@@ -278,9 +281,9 @@ function numberOfItems(item) {
     }
     //If you don't have that item already, just write 1x plus the item name
   } else {
-    labelItemList.textContent += `${
+    labelItemList.textContent += `\n${
       inventory.filter(mov => mov === `${item}`).length + 1
-    }x ${item}, `;
+    }x ${item} `;
   }
   //Just in case, not really needed
   return Number(counts[whereIsItem]);
@@ -295,7 +298,7 @@ btngold.addEventListener(`click`, function () {
       damageOnClick = damageOnClick * crowbarBuff;
     } else {
       //If not, then do normal damage
-      damageOnClick = properties.clickMultiplier[1];
+      damageOnClick = properties.clickMultiplier[1] + enemyLevel;
     }
   }
   //If you have Crit glasses
@@ -319,7 +322,7 @@ btngold.addEventListener(`click`, function () {
   gold = gold + damageOnClick;
   enemyHealth = enemyHealth.toFixed(1) - damageOnClick.toFixed(1);
   //Prevents crowbar from bugging out if you constantly hit them for double damage(if they die before they can reach below 90% hp)
-  damageOnClick = properties.clickMultiplier[1];
+  damageOnClick = properties.clickMultiplier[1] + enemyLevel;
 });
 
 //Buying the survivor button

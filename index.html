@@ -6,36 +6,77 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>🧙SHADOW WIZARD MONEY GANG</title>
     <link rel="stylesheet" href="index.css" />
-    
   </head>
   <body class="boldena-font">
-    <div>
-      <form>
-        <div>
-          <input type="text" placeholder="Your Name" maxlength ="18" id="farm-name">
-          <button id="farm-name-button"></button>
-        </div>
-        <div class="items">Your items:<span id="items-list"></span>
-        </div>
-      </form>
+    <!-- LEFT SIDE -->
+    <div class="grid-container">
+      <div>
+        <span class="property-align">
+          <input
+            type="button"
+            value="Buy survivor"
+            class="buying boldena-font"
+            id="survivor"
+          /><br>
+          <input
+            type="button"
+            value="Buy Click Multiplier"
+            class="buying boldena-font"
+            id="clickMultiplier"
+          /><br>
+          <input
+            type="button"
+            value="Buy drone"
+            class="buying boldena-font"
+            id="drone"
+          /><br>
+        </span>
+      </div>
+      <!-- CENTER -->
 
-      <div>Gold:<span class="gold">23</span></div>
-      <!-- Levels and tooltip -->
-      <div class="inline-div">Level:</div>
-      <div class="tooltip"><span id="enemy-level">23</span><span class="tooltiptext tool-tip-level">Current Level is</span></div>
-      <!-- Crit text -->
-      <div class="crit-text">CRIT!</div>
+      <div>
+        <form>
+          <button id="farm-name-button"></button><br>
+          <input
+            type="text"
+            placeholder="Your Name"
+            maxlength="10"
+            id="farm-name"
+          />
 
-      <div class="inline-div"><input type="button" value="Enemy:" class="gold-button boldena-font" />
-      <div class=" history-text">where am i</div>
+          
 
-      <div class="inline-div "><input type="button" value="Buy chest" class="buying boldena-font chests"></div>
-    </div>
+          </span>
+        </form>
+        <span>Gold:<span class="gold">23</span></span><br>
+        <!-- Levels and tooltip -->
+        <span>Level:</span>
+        <span class="tooltip">
+          <span id="enemy-level">23</span
+          ><span class="tooltiptext tool-tip-level">Current Level is</span>
+        </span><br>
+        <!-- Crit text -->
+        <span class="crit-text">CRIT!</span><br>
 
-    <div class="property-align">
-      <input type="button" value="Buy survivor" class="buying boldena-font" id="survivor">
-      <input type="button" value="Buy Click Multiplier" class="buying boldena-font" id="clickMultiplier"><br><br>
-      <input type="button" value="Buy drone" class="buying boldena-font" id="drone">
+        <span>
+          <input
+            type="button"
+            value="Enemy:"
+            class="gold-button boldena-font"
+          />
+        </span><br>
+        <span class="history-text">where am i</span>
+      </div>
+      <!-- RIGHT -->
+      <div>
+  
+        <input
+          type="button"
+          value="Buy chest"
+          class="buying boldena-font chests"
+        /><br>
+        <span id="items-list"></span>
+      </div>
     </div>
     <script src="script.js"></script>
   </body>
