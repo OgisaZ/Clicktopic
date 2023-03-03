@@ -6,6 +6,11 @@ const labelHistoryText = document.querySelector(`.history-text`);
 const labelItemList = document.getElementById(`items-list`);
 const labelEnemyLevel = document.getElementById(`enemy-level`);
 const labelToolTip = document.querySelector(`.tool-tip-level`);
+const labelWelcome = document.querySelector(`.welcome-text`);
+
+const labelSurvivor = document.getElementById(`survivor-text`);
+const labelClickMultiplier = document.getElementById(`click-multiplier-text`);
+const labelDrone = document.getElementById(`drone-text`);
 //Inputs
 const inputFarmName = document.getElementById(`farm-name`);
 //Get the farm name from localStorage
@@ -22,6 +27,7 @@ const btnDrone = document.getElementById(`drone`);
 let gold = Number(localStorage?.getItem(`gold`)) || 0;
 //All the items you have (from chests)
 const inventory = JSON.parse(localStorage.getItem(`inventory`)) || [];
+const inventoryUnique = new Set(inventory);
 //Array of all the items
 const items = [
   `Soldier's Syringe`,
@@ -89,11 +95,23 @@ const properties = JSON.parse(localStorage.getItem(`properties`)) || {
 //Get idle gold from localStorage. Will explain how it is calculated it its function
 let idleGold = Number(localStorage?.getItem(`idleGold`)) || 0;
 //How much damage you deal on click. Mostly used with crowbar calculations
-let damageOnClick = properties.clickMultiplier[1] + enemyLevel;
+let damageOnClick = properties.clickMultiplier[1] + enemyLevel - 1;
 
 //Display on screen
 labelgoldNumber.textContent = gold.toFixed(1);
 labelEnemyLevel.textContent = enemyLevel;
+localStorage.getItem(`farmName`)
+  ? (labelWelcome.textContent = `Welcome back, ${localStorage.getItem(
+      `farmName`
+    )}`)
+  : (labelWelcome.textContent = ``);
+labelItemList.innerHTML = ``;
+for (const mov of items) {
+  console.log(`hello`);
+  const positionInArray = items.indexOf(mov);
+  if (counts[positionInArray] === 0) continue;
+  labelItemList.innerHTML += `${counts[positionInArray]}x ${mov}<br>`;
+}
 
 //REPLACE AT
 String.prototype.replaceAt = function (index, replacement) {
@@ -155,7 +173,7 @@ function updateHistoryText(string) {
     setTimeout(e => {
       labelHistoryText.style.opacity = 0;
       labelHistoryText.style.transition = `1s`;
-    }, 500);
+    }, 2000);
   }
 }
 function updateIdleGold() {
@@ -184,7 +202,8 @@ function updategoldCount() {
     //The gold you get on kill is calculated:
     gold = gold + (randomNumber + 1) * (enemyGoldOnKill + rollOfPenniesBuff);
     updateHistoryText(
-      ((randomNumber + 1) * (enemyGoldOnKill + rollOfPenniesBuff)).toFixed(2)
+      `$` +
+        ((randomNumber + 1) * (enemyGoldOnKill + rollOfPenniesBuff)).toFixed(2)
     );
     enemyKillCount++;
 
@@ -197,6 +216,7 @@ function updategoldCount() {
     )}`;
   }
   if (gold >= 200 || properties.drone[1] >= 1 || btnDrone.style.opacity === 1) {
+    labelDrone.style.opacity = 1;
     btnDrone.style.opacity = 1;
   }
 }
@@ -207,23 +227,18 @@ function automatedDamage() {
 
 function updateButtonValues() {
   //Update survivor numbers
-  btnsurvivor.value = `Buy survivor(${properties.survivor[1].toFixed(
-    1
-  )}) \n $${properties.survivor[0].toFixed(1)}`;
-  btnDrone.value = `Buy drone(${properties.drone[1].toFixed(
-    1
-  )})\n$${properties.drone[0].toFixed(1)}`;
+  btnsurvivor.value = `Buy $${properties.survivor[0].toFixed(0)}`;
+  labelSurvivor.textContent = `Survivor (${properties.survivor[1]})`;
 
-  //Update gold multiplier numbers
-  btnClickMultiplier.value = `Buy click multiplier(${properties.clickMultiplier[1].toFixed(
+  btnClickMultiplier.value = `Buy $${properties.clickMultiplier[0].toFixed(0)}`;
+  labelClickMultiplier.textContent = `Click Multiplier (${properties.clickMultiplier[1].toFixed(
     1
-  )}) \n $${properties.clickMultiplier[0].toFixed(1)}`;
+  )})`;
 
+  btnDrone.value = `Buy $${properties.drone[0].toFixed(0)}`;
+  labelDrone.textContent = `Drone (${properties.drone[1]})`;
   //Update chest numbers
-  btnChests.value = `Buy chest\n $${properties.chests[0].toFixed(1)}`;
-
-  //Probably shouldn't of named it inventoryText
-  labelItemList.textContent = localStorage.getItem(`inventoryText`);
+  btnChests.value = `Buy chest\n $${properties.chests[0].toFixed(0)}`;
 }
 //TODO
 // localStorage.clear(`gold`);
@@ -232,7 +247,7 @@ enemyLevelUp();
 enemyPicker();
 updateButtonValues();
 updateIdleGold();
-//I made them variables so i could cancel them, and also looks better without the setInterval thing on the whole function
+// I made them variables so i could cancel them, and also looks better without the setInterval thing on the whole function
 let updategoldCountInterval = setInterval(updategoldCount, 33);
 let automatedDamageInterval = setInterval(automatedDamage, 33);
 
@@ -250,43 +265,16 @@ function updatePrice(property) {
   //This is pretty smart im proud of myself
   //Change the text on the buttons, to add how many you have, and the price to buy another one
 }
-//TODO
-//Waaay to over-engineered
 function numberOfItems(item) {
-  //Find the index of that item in the items array
   const whereIsItem = items.findIndex(mov => mov === item);
   //+1 that item that you got
   counts[whereIsItem]++;
-  //If you already have the item:
-  if (inventory.includes(item)) {
-    //Find what number of that item you currently have (looks at the string)
-    let whatNumberYouCurrentlyHave = Number(
-      labelItemList.textContent[labelItemList.textContent.indexOf(item) - 3]
-    );
-    //Find where that item is located in the string
-    let whereThatItemIsLocated = labelItemList.textContent.indexOf(item) - 3;
-    //Super badly made here, will change later, but if you have a two-digit number
-    if (counts[whereIsItem] >= 10) {
-      //Replace the last digit with the last digit in the counts array, then the first
-      labelItemList.textContent = labelItemList.textContent
-        ?.replaceAt(whereThatItemIsLocated, String(counts[whereIsItem])[1])
-        ?.replaceAt(whereThatItemIsLocated - 1, String(counts[whereIsItem])[0]);
-      //If you have between 1 and 9
-    } else if (counts[whereIsItem] < 10 && counts[whereIsItem] > 1) {
-      //Then just replace that number with how many you currently have
-      labelItemList.textContent = labelItemList.textContent.replaceAt(
-        whereThatItemIsLocated,
-        whatNumberYouCurrentlyHave + 1
-      );
-    }
-    //If you don't have that item already, just write 1x plus the item name
-  } else {
-    labelItemList.textContent += `\n${
-      inventory.filter(mov => mov === `${item}`).length + 1
-    }x ${item} `;
+  labelItemList.innerHTML = ``;
+  for (const mov of items) {
+    const positionInArray = items.indexOf(mov);
+    if (counts[positionInArray] === 0) continue;
+    labelItemList.innerHTML += `${counts[positionInArray]}x ${mov}<br>`;
   }
-  //Just in case, not really needed
-  return Number(counts[whereIsItem]);
 }
 //Clicking the button, adds a gold
 btngold.addEventListener(`click`, function () {
@@ -298,7 +286,7 @@ btngold.addEventListener(`click`, function () {
       damageOnClick = damageOnClick * crowbarBuff;
     } else {
       //If not, then do normal damage
-      damageOnClick = properties.clickMultiplier[1] + enemyLevel;
+      damageOnClick = properties.clickMultiplier[1] + enemyLevel - 1;
     }
   }
   //If you have Crit glasses
@@ -322,7 +310,7 @@ btngold.addEventListener(`click`, function () {
   gold = gold + damageOnClick;
   enemyHealth = enemyHealth.toFixed(1) - damageOnClick.toFixed(1);
   //Prevents crowbar from bugging out if you constantly hit them for double damage(if they die before they can reach below 90% hp)
-  damageOnClick = properties.clickMultiplier[1] + enemyLevel;
+  damageOnClick = properties.clickMultiplier[1] + enemyLevel - 1;
 });
 
 //Buying the survivor button
@@ -339,9 +327,7 @@ btnsurvivor.addEventListener(`click`, function (e) {
     updateIdleGold();
     updatePrice(`survivor`);
     updateHistoryText(`survivor`);
-    btnsurvivor.value = `Buy survivor(${properties.survivor[1].toFixed(
-      1
-    )})\n ${properties.survivor[0].toFixed(1)}`;
+    updateButtonValues();
   }
 });
 //Click multiplier is also used to calculate how much damage you deal on click, even if you don't have any
@@ -355,9 +341,7 @@ btnClickMultiplier.addEventListener(`click`, function () {
     updateIdleGold();
     updatePrice(`clickMultiplier`);
     updateHistoryText(`Click Multiplier`);
-    btnClickMultiplier.value = `Buy click multiplier (${properties.clickMultiplier[1].toFixed(
-      1
-    )}) \n ${properties.clickMultiplier[0].toFixed(1)}`;
+    updateButtonValues();
   }
 });
 
@@ -374,9 +358,7 @@ btnDrone.addEventListener(`click`, function (e) {
     updateIdleGold();
     updatePrice(`drone`);
     updateHistoryText(`drone`);
-    btnDrone.value = `Buy drone(${properties.drone[1].toFixed(
-      1
-    )})\n ${properties.drone[0].toFixed(1)}`;
+    updateButtonValues();
   }
 });
 
@@ -413,7 +395,6 @@ btnChests.addEventListener(`click`, function (e) {
     //Local storage scary
     localStorage.setItem(`inventory`, JSON.stringify(inventory));
     localStorage.setItem(`counts`, JSON.stringify(counts));
-    localStorage.setItem(`inventoryText`, labelItemList.textContent);
 
     //ITEM FUNCTIONS!!!(below)
     itemFunctions(randomItem);

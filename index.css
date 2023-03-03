@@ -19,16 +19,22 @@ div {
   height: 100%;
   width: 100%;
 }
+.welcome-text {
+  font-size: 20px;
+}
 .boldena-font {
   font-family: Boldena;
 }
 .gold {
+  font-size: 180%;
+}
+.gold-styling {
   font-size: 25px;
 }
 .gold-button {
   font-size: 25px;
   border-radius: 10rem;
-  margin-top: 30%;
+  margin-top: 20%;
   height: 15rem;
   width: 15rem;
   background-color: #f5f5f5;
@@ -39,20 +45,21 @@ div {
 }
 .gold-button:hover {
   background-color: #bebebe;
-  opacity: 0.7;
+
   transition: 0.5s;
 }
 .gold-button:active {
   background-color: #b30000;
   box-shadow: 0 5px #666;
-  opacity: 0.7;
+
   transform: translateY(5px);
   transition: 0.1s;
 }
 .grid-container {
   display: grid;
+  padding: 10px;
   column-gap: 10px;
-  grid-template-columns: auto auto auto;
+  grid-template-columns: 32% auto 32%;
   grid-template-rows: 100%;
 }
 .grid-container > div {
@@ -62,11 +69,8 @@ div {
   justify-items: center;
 }
 
-.property-align {
-  padding: 10px;
-}
 .buying {
-  width: 180px;
+  width: 30%;
   border-radius: 50px;
   border-color: gainsboro;
   box-shadow: 0 3px #999;
@@ -86,11 +90,13 @@ div {
   padding: 25px;
   opacity: 0;
   transition: opacity 1s;
+  font-size: 180%;
 }
 .chests {
-  padding: 25px;
-  width: 150px;
-  font-size: medium;
+  padding: 3%;
+  width: 50%;
+  margin-top: 5%;
+  font-size: 15px;
 }
 .items {
   position: absolute;
@@ -101,12 +107,31 @@ div {
   color: red;
   transition: 0.5s;
 }
+.shop-text {
+  font-size: 2rem;
+}
+
 #items-list {
+  display: inline;
   font-size: 25px;
-  margin-top: 100px;
+  border: 0px solid black;
+  width: 90%;
+  height: 10%;
+  text-align: left;
 }
 #survivor {
   color: #33334d;
+}
+#survivor-text {
+  display: block;
+}
+#click-multiplier-text {
+  display: block;
+}
+#drone-text {
+  display: block;
+  opacity: 0;
+  transition: 0.5s;
 }
 #drone {
   opacity: 0;
