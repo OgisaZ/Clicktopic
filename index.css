@@ -30,6 +30,7 @@ div {
 }
 .gold-styling {
   font-size: 25px;
+  user-select: none;
 }
 .gold-button {
   font-size: 25px;
@@ -106,6 +107,7 @@ div {
   opacity: 0;
   color: red;
   transition: 0.5s;
+  user-select: none;
 }
 .shop-text {
   font-size: 2rem;
@@ -135,7 +137,7 @@ div {
 }
 #drone {
   opacity: 0;
-  color: cadetblue;
+  color: rgb(54, 91, 92);
 }
 #clickMultiplier {
   color: #995e4f;
@@ -168,6 +170,13 @@ div {
   font-size: 25px;
   margin-left: 2%;
 }
+.char-remaining {
+  display: inline-block;
+  width: 70%;
+  text-align: left;
+  opacity: 0;
+  transition: 0.5s;
+}
 .tool-tip-level {
   font-size: 15px;
 }
@@ -190,6 +199,7 @@ div {
   z-index: 1;
   top: -5px;
   left: 105%;
+  user-select: none;
 }
 
 .tooltip:hover .tooltiptext {

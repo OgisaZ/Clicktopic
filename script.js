@@ -7,7 +7,8 @@ const labelItemList = document.getElementById(`items-list`);
 const labelEnemyLevel = document.getElementById(`enemy-level`);
 const labelToolTip = document.querySelector(`.tool-tip-level`);
 const labelWelcome = document.querySelector(`.welcome-text`);
-
+const labelCharactersRemain = document.querySelector(`.char-remaining`);
+//Property labels
 const labelSurvivor = document.getElementById(`survivor-text`);
 const labelClickMultiplier = document.getElementById(`click-multiplier-text`);
 const labelDrone = document.getElementById(`drone-text`);
@@ -107,7 +108,6 @@ localStorage.getItem(`farmName`)
   : (labelWelcome.textContent = ``);
 labelItemList.innerHTML = ``;
 for (const mov of items) {
-  console.log(`hello`);
   const positionInArray = items.indexOf(mov);
   if (counts[positionInArray] === 0) continue;
   labelItemList.innerHTML += `${counts[positionInArray]}x ${mov}<br>`;
@@ -239,6 +239,22 @@ function updateButtonValues() {
   labelDrone.textContent = `Drone (${properties.drone[1]})`;
   //Update chest numbers
   btnChests.value = `Buy chest\n $${properties.chests[0].toFixed(0)}`;
+  setInterval(e => {
+    if (gold <= properties.survivor[0])
+      btnsurvivor.style.backgroundColor = `crimson`;
+    else btnsurvivor.style.backgroundColor = `gainsboro`;
+
+    if (gold <= properties.clickMultiplier[0])
+      btnClickMultiplier.style.backgroundColor = `crimson`;
+    else btnClickMultiplier.style.backgroundColor = `gainsboro`;
+
+    if (gold <= properties.drone[0]) btnDrone.style.backgroundColor = `crimson`;
+    else btnDrone.style.backgroundColor = `gainsboro`;
+
+    if (gold <= properties.chests[0])
+      btnChests.style.backgroundColor = `crimson`;
+    else btnChests.style.backgroundColor = `gainsboro`;
+  }, 100);
 }
 //TODO
 // localStorage.clear(`gold`);
@@ -372,12 +388,19 @@ btnFarmName.addEventListener(`click`, function (e) {
 
   //Lose focus on input field
   inputFarmName.blur();
+  labelCharactersRemain.style.opacity = 0;
+});
+//To see how many characters you can type in farmName
+inputFarmName.addEventListener(`keyup`, function (e) {
+  labelCharactersRemain.style.opacity = 1;
+  labelCharactersRemain.textContent = 10 - inputFarmName.value.length;
 });
 
 //Insted of pressing "Enter" key, click anywhere to lose focus, and it will save it
-inputFarmName.onblur = e =>
+inputFarmName.onblur = e => {
   localStorage.setItem(`farmName`, inputFarmName.value);
-
+  labelCharactersRemain.style.opacity = 0;
+};
 //The fun part!
 btnChests.addEventListener(`click`, function (e) {
   //If you can buy it
