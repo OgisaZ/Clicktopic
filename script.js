@@ -535,6 +535,9 @@ btnFarmName.addEventListener(`click`, function (e) {
   //Lose focus on input field
   inputFarmName.blur();
   labelCharactersRemain.style.opacity = 0;
+  if (inputFarmName.value === `resetLS`) {
+    document.querySelector(`.reset`).style.visibility = `visible`;
+  }
 });
 //To see how many characters you can type in farmName
 inputFarmName.addEventListener(`keyup`, function (e) {

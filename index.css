@@ -226,4 +226,5 @@ div {
 }
 .reset {
   align-items: end;
+  visibility: hidden;
 }
