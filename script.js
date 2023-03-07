@@ -71,7 +71,7 @@ let bossHealth;
 let bossFightCurrent = false;
 let bossFightInterval;
 let maxBossHealth;
-const bosses = JSON.parse(localStorage.getItem(`bosses`)) || [
+let bosses = JSON.parse(localStorage.getItem(`bosses`)) || [
   [`Cedonj`, false],
   [`Pablo`, false],
   [`lane`, false],
@@ -140,35 +140,6 @@ for (const mov of items) {
 }
 //----------------------------------------------------------------------------
 //FUNCTIONS
-function enemyLevelUp() {
-  if (enemyLevel >= 15) {
-    //Requirement for next enemy level is:
-    nextLevelReq = enemyLevel * 3 + 20;
-    enemyGoldOnKill = enemyLevel * 3.5;
-  } else {
-    //Requirement for next enemy level is:
-    nextLevelReq = enemyLevel * 2 + 10;
-    enemyGoldOnKill = enemyLevel * 3;
-  }
-  //If you kill enough enemies:
-  if (enemyKillCount === nextLevelReq) {
-    //Updates the enemy level
-    enemyLevel++;
-    //Change the text
-    labelEnemyLevel.textContent = enemyLevel;
-    //Set the kill count back to 0
-    enemyKillCount = 0;
-    //Get more gold on kill
-
-    updateHistoryText(`LEVEL UP! Now level ${enemyLevel}`);
-  }
-  //Add stuff to localStorage
-  localStorage.setItem(`enemyLevel`, enemyLevel);
-  localStorage.setItem(`enemyKillCount`, enemyKillCount);
-  //The text changes every kill
-  nextLevelReqText = nextLevelReq - enemyKillCount;
-  labelToolTip.textContent = `Kills required for next level:${nextLevelReqText}`;
-}
 
 function enemyPicker() {
   //Take a random item from 0 to the length of enemies array
@@ -201,11 +172,41 @@ function bossPicker(bossKilled = false) {
     }
   }
 }
+function enemyLevelUp() {
+  if (enemyLevel >= 15) {
+    //Requirement for next enemy level is:
+    nextLevelReq = enemyLevel * 3 + 20;
+    enemyGoldOnKill = enemyLevel * 3.5;
+  } else {
+    //Requirement for next enemy level is:
+    nextLevelReq = enemyLevel * 2 + 10;
+    enemyGoldOnKill = enemyLevel * 3;
+  }
+  //If you kill enough enemies:
+  if (enemyKillCount >= nextLevelReq && bosses[enemyLevel - 1][1]) {
+    console.log(`entered here!`);
+    //Updates the enemy level
+    enemyLevel++;
+    //Change the text
+    labelEnemyLevel.textContent = enemyLevel;
+    //Set the kill count back to 0
+    enemyKillCount = 0;
+    //Get more gold on kill
+
+    updateHistoryText(`LEVEL UP! Now level ${enemyLevel}`);
+  }
+  //Add stuff to localStorage
+  localStorage.setItem(`enemyLevel`, enemyLevel);
+  localStorage.setItem(`enemyKillCount`, enemyKillCount);
+  //The text changes every kill
+  nextLevelReqText = nextLevelReq - enemyKillCount;
+  labelToolTip.textContent = `Kills required for next level:${
+    nextLevelReqText <= 0 ? `0` : nextLevelReqText
+  }`;
+}
+
 function displayBoss() {
-  if (
-    globalEnemyKillCount >=
-    (bosses.flat().indexOf(false) - 1 + 1) * enemyLevel * 7
-  ) {
+  if (enemyKillCount >= nextLevelReq) {
     btnBoss.style.visibility = `visible`;
   } else {
     btnBoss.style.visibility = `hidden`;
@@ -214,7 +215,7 @@ function displayBoss() {
     btnBoss.style.visibility = `hidden`;
   }
 }
-let time = 60;
+let time = 30;
 
 let i = 1;
 
@@ -248,6 +249,7 @@ function bossFight() {
         clearInterval(timer);
         labelTimer.textContent = ``;
         time = 60;
+        enemyKillCount = 0;
         i = 1;
       }
     }, 1000);
@@ -270,6 +272,7 @@ function bossFight() {
     enemyPicker();
     updateButtonValues();
     updateIdleGold();
+    enemyLevelUp();
     i = 1;
   } else {
     btngold.value = `${nextBoss}\nHealth:${bossHealth.toFixed(1)}`;
@@ -640,5 +643,28 @@ document.querySelector(`.reset`).addEventListener(`click`, function () {
   clearInterval(updategoldCountInterval);
   clearInterval(automatedDamageInterval);
   localStorage.clear();
-  location.reload();
+
+  setTimeout(() => location.reload(), 1000);
+  setInterval(() => {
+    localStorage.clear();
+    bosses = [
+      [`Cedonj`, false],
+      [`Pablo`, false],
+      [`lane`, false],
+      [`Orbito`, false],
+      [`Sebastian`, false],
+      [`Gojak`, false],
+      [`Dizna`, false],
+      [`M3S-B0R`, false],
+      [`MuskAvirje`, false],
+      [`Novak Telsa`, false],
+      [`Nikola Djokovic`, false],
+      [`Stiropor`, false],
+      [`Picajzla`, false],
+      [`ByBaj`, false],
+      [`Kharton`, false],
+      [`Jovan Fajnisevic`, false],
+    ];
+    console.log(`Resetting...`);
+  }, 1);
 });
