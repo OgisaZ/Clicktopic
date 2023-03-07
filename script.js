@@ -12,6 +12,7 @@ const labelCharactersRemain = document.querySelector(`.char-remaining`);
 const labelSurvivor = document.getElementById(`survivor-text`);
 const labelClickMultiplier = document.getElementById(`click-multiplier-text`);
 const labelDrone = document.getElementById(`drone-text`);
+const labelTimer = document.querySelector(`.timer`);
 //Inputs
 const inputFarmName = document.getElementById(`farm-name`);
 //Get the farm name from localStorage
@@ -19,6 +20,7 @@ inputFarmName.value = localStorage.getItem(`farmName`);
 //Buttons
 const btngold = document.querySelector(`.gold-button`);
 const btnFarmName = document.getElementById(`farm-name-button`);
+const btnBoss = document.querySelector(`.boss-button`);
 //Property Buttons
 const btnClickMultiplier = document.getElementById(`clickMultiplier`);
 const btnsurvivor = document.getElementById(`survivor`);
@@ -64,12 +66,36 @@ const enemies = [
   //enemyHealth = (gde se nalaze u array(npr wisp je 1)) * 2.5 * (enemyLevel * 1.2);
   //Znaci wisp se nalazi na poziciji 1, znaci 1 * 2.5 = 2.5 i ako je level 1   2.5* 1.2 = 3 hp
 ];
-
+let nextBoss;
+let bossHealth;
+let bossFightCurrent = false;
+let bossFightInterval;
+let maxBossHealth;
+const bosses = JSON.parse(localStorage.getItem(`bosses`)) || [
+  [`Cedonj`, false],
+  [`Pablo`, false],
+  [`lane`, false],
+  [`Orbito`, false],
+  [`Sebastian`, false],
+  [`Gojak`, false],
+  [`Dizna`, false],
+  [`M3S-B0R`, false],
+  [`MuskAvirje`, false],
+  [`Novak Telsa`, false],
+  [`Nikola Djokovic`, false],
+  [`Stiropor`, false],
+  [`Picajzla`, false],
+  [`ByBaj`, false],
+  [`Kharton`, false],
+  [`Jovan Fajnisevic`, false],
+];
 let enemyHealth;
 //For crowbar item
 let enemyMaxHealth;
 //Used to see when you will level up. Hold your mouse over the level number to see how many more you need to kill to level up
 let enemyKillCount = Number(localStorage.getItem(`enemyKillCount`)) || 0;
+let globalEnemyKillCount =
+  Number(localStorage.getItem(`globalEnemyKillCount`)) || 0;
 let enemyLevel = Number(localStorage.getItem(`enemyLevel`)) || 1;
 //How many you need to kill for them to level up
 let nextLevelReq;
@@ -112,16 +138,8 @@ for (const mov of items) {
   if (counts[positionInArray] === 0) continue;
   labelItemList.innerHTML += `${counts[positionInArray]}x ${mov}<br>`;
 }
-
-//REPLACE AT
-String.prototype.replaceAt = function (index, replacement) {
-  if (index >= this.length) {
-    return this.valueOf();
-  }
-
-  return this.substring(0, index) + replacement + this.substring(index + 1);
-};
-
+//----------------------------------------------------------------------------
+//FUNCTIONS
 function enemyLevelUp() {
   if (enemyLevel >= 15) {
     //Requirement for next enemy level is:
@@ -163,6 +181,104 @@ function enemyPicker() {
   const randomEnemy = enemies[randomNumber];
   btngold.value = `${randomEnemy} \n`;
 }
+let bossesNumero = 0;
+function bossPicker(bossKilled = false) {
+  for (const boss of bosses) {
+    if (bosses[bosses.indexOf(boss)][1] === false) {
+      bossesNumero = bosses.indexOf(boss);
+    }
+    if (bossKilled) {
+      bosses[bossesNumero][1] = true;
+      bossKilled = false;
+      localStorage.setItem(`bosses`, JSON.stringify(bosses));
+    }
+    if (bosses[bossesNumero][1] === false) {
+      nextBoss = bosses[bossesNumero][0];
+      bossHealth = enemyLevel * 2 * ((bossesNumero + 1) * 100);
+      maxBossHealth = bossHealth;
+      localStorage.setItem(`bosses`, JSON.stringify(bosses));
+      return nextBoss;
+    }
+  }
+}
+function displayBoss() {
+  setInterval(() => {
+    if (
+      globalEnemyKillCount >=
+      (bosses.flat().indexOf(false) - 1 + 1) * enemyLevel * 7
+    ) {
+      btnBoss.style.visibility = `visible`;
+    } else {
+      btnBoss.style.visibility = `hidden`;
+    }
+    if (bossFightCurrent === true) {
+      btnBoss.style.visibility = `hidden`;
+    }
+  }, 33);
+}
+let time = 60;
+
+let i = 1;
+
+function bossFight() {
+  clearInterval(enemyTesterInterval);
+
+  bossFightCurrent = true;
+  if (i === 1) {
+    const timer = setInterval(function () {
+      let min = String(Math.trunc(time / 60)).padStart(2, 0);
+      let sec = String(time % 60).padStart(2, 0);
+
+      labelTimer.textContent = `${min}:${sec}`;
+
+      time--;
+      if (time <= -1) {
+        clearInterval(timer);
+        clearInterval(bossFightInterval);
+        bossFightCurrent = false;
+        enemyTesterInterval = setInterval(enemyTester, 33);
+        //You get the nextBoss name here
+        bossPicker();
+        enemyPicker();
+        updateButtonValues();
+        updateIdleGold();
+        labelTimer.textContent = ``;
+        time = 60;
+        i = 1;
+      }
+      if (!bossFightCurrent) {
+        clearInterval(timer);
+        labelTimer.textContent = ``;
+        time = 60;
+        i = 1;
+      }
+    }, 1000);
+  }
+
+  if (bossHealth <= 0) {
+    bossFightCurrent = false;
+    //The gold you get on kill is calculated:
+    gold = gold + (maxBossHealth / 2) * (enemyGoldOnKill + rollOfPenniesBuff);
+    updateHistoryText(
+      `$` +
+        ((maxBossHealth / 2) * (enemyGoldOnKill + rollOfPenniesBuff)).toFixed(2)
+    );
+
+    clearInterval(bossFightInterval);
+
+    enemyTesterInterval = setInterval(enemyTester, 33);
+    //You get the nextBoss name here
+    bossPicker(true);
+    enemyPicker();
+    updateButtonValues();
+    updateIdleGold();
+    i = 1;
+  } else {
+    btngold.value = `${nextBoss}\nHealth:${bossHealth.toFixed(1)}`;
+    i++;
+  }
+}
+
 function updateHistoryText(string) {
   //Change the opacity from 0 to 1 with a transition effect...
   labelHistoryText.style.opacity = 1;
@@ -176,6 +292,7 @@ function updateHistoryText(string) {
     }, 2000);
   }
 }
+
 function updateIdleGold() {
   //Idle gold is summing up what every property makes every 33 millisecs
 
@@ -188,6 +305,28 @@ function updateIdleGold() {
   localStorage.setItem(`idleGold`, idleGold);
 }
 
+function enemyTester() {
+  if (enemyHealth <= 0) {
+    //The gold you get on kill is calculated:
+    gold = gold + (randomNumber + 1) * (enemyGoldOnKill + rollOfPenniesBuff);
+    updateHistoryText(
+      `$` +
+        ((randomNumber + 1) * (enemyGoldOnKill + rollOfPenniesBuff)).toFixed(2)
+    );
+    enemyKillCount++;
+    globalEnemyKillCount++;
+    localStorage.setItem(`globalEnemyKillCount`, globalEnemyKillCount);
+
+    enemyPicker();
+    enemyLevelUp();
+  } else {
+    //Display the current enemy and their health
+    btngold.value = `${enemies[randomNumber]}\nHealth:${enemyHealth.toFixed(
+      1
+    )}`;
+  }
+}
+
 function updategoldCount() {
   //Every 33 milliseconds (around 30 frames per second)
   //Add the current gold to localStorage
@@ -198,23 +337,7 @@ function updategoldCount() {
   localStorage.setItem(`properties`, JSON.stringify(properties));
   //And add gold for each property per 33 milsec
   gold = gold + idleGold;
-  if (enemyHealth <= 0) {
-    //The gold you get on kill is calculated:
-    gold = gold + (randomNumber + 1) * (enemyGoldOnKill + rollOfPenniesBuff);
-    updateHistoryText(
-      `$` +
-        ((randomNumber + 1) * (enemyGoldOnKill + rollOfPenniesBuff)).toFixed(2)
-    );
-    enemyKillCount++;
 
-    enemyPicker();
-    enemyLevelUp();
-  } else {
-    //Display the current enemy and their health
-    btngold.value = `${enemies[randomNumber]}\nHealth:${enemyHealth.toFixed(
-      1
-    )}`;
-  }
   if (gold >= 200 || properties.drone[1] >= 1 || btnDrone.style.opacity === 1) {
     labelDrone.style.opacity = 1;
     btnDrone.style.opacity = 1;
@@ -222,7 +345,11 @@ function updategoldCount() {
 }
 function automatedDamage() {
   //Do automated damage every 33 milisec
-  enemyHealth = enemyHealth - idleGold;
+  if (bossFightCurrent) {
+    bossHealth = bossHealth - idleGold;
+  } else {
+    enemyHealth = enemyHealth - idleGold;
+  }
 }
 
 function updateButtonValues() {
@@ -239,6 +366,10 @@ function updateButtonValues() {
   labelDrone.textContent = `Drone (${properties.drone[1]})`;
   //Update chest numbers
   btnChests.value = `Buy chest\n $${properties.chests[0].toFixed(0)}`;
+
+  btnBoss.value = `Fight ${nextBoss}`;
+
+  //Turn buttons you can't afford to red
   setInterval(e => {
     if (gold <= properties.survivor[0])
       btnsurvivor.style.backgroundColor = `crimson`;
@@ -261,8 +392,11 @@ function updateButtonValues() {
 // To get all the stuff on screen
 enemyLevelUp();
 enemyPicker();
+let enemyTesterInterval = setInterval(enemyTester, 33);
+bossPicker();
 updateButtonValues();
 updateIdleGold();
+displayBoss();
 // I made them variables so i could cancel them, and also looks better without the setInterval thing on the whole function
 let updategoldCountInterval = setInterval(updategoldCount, 33);
 let automatedDamageInterval = setInterval(automatedDamage, 33);
@@ -278,26 +412,31 @@ function updatePrice(property) {
   //Add it to the object, and set it to 1 decimal place
   properties[property][0] = Number(price.toFixed(1));
 
-  //This is pretty smart im proud of myself
   //Change the text on the buttons, to add how many you have, and the price to buy another one
 }
 function numberOfItems(item) {
   const whereIsItem = items.findIndex(mov => mov === item);
   //+1 that item that you got
   counts[whereIsItem]++;
+  //if there is something there, change to empty string
   labelItemList.innerHTML = ``;
   for (const mov of items) {
+    //see where the item is in items array
     const positionInArray = items.indexOf(mov);
+    //if you don't have any, don't go any further in the for loop
     if (counts[positionInArray] === 0) continue;
+    //write the text, how many of that item you have, that item, and add a break, so there is a new line
     labelItemList.innerHTML += `${counts[positionInArray]}x ${mov}<br>`;
   }
 }
-//Clicking the button, adds a gold
+//-----------------------------------------------------------------------------------------------
+//BUTTONS AND EVENT LISTENERS
+//Clicking the button, adds gold
 btngold.addEventListener(`click`, function () {
   //If you have a crowbar
   if (inventory.includes(`Crowbar`)) {
     //If enemy health is above 90% of their max health
-    if (enemyHealth >= enemyMaxHealth * 0.9) {
+    if (bossFightCurrent ? bossHealth : enemyHealth >= enemyMaxHealth * 0.9) {
       //Then do the crowbar buff
       damageOnClick = damageOnClick * crowbarBuff;
     } else {
@@ -319,12 +458,21 @@ btngold.addEventListener(`click`, function () {
       );
       //Double the damage on click
       gold = gold + damageOnClick;
-      enemyHealth = enemyHealth.toFixed(1) - damageOnClick.toFixed(1);
+      if (bossFightCurrent) {
+        bossHealth = bossHealth.toFixed(1) - damageOnClick.toFixed(1);
+      } else {
+        enemyHealth = enemyHealth.toFixed(1) - damageOnClick.toFixed(1);
+      }
     }
   }
   //Deal normal damage
   gold = gold + damageOnClick;
-  enemyHealth = enemyHealth.toFixed(1) - damageOnClick.toFixed(1);
+  if (bossFightCurrent) {
+    bossHealth = bossHealth.toFixed(1) - damageOnClick.toFixed(1);
+  } else {
+    enemyHealth = enemyHealth.toFixed(1) - damageOnClick.toFixed(1);
+  }
+
   //Prevents crowbar from bugging out if you constantly hit them for double damage(if they die before they can reach below 90% hp)
   damageOnClick = properties.clickMultiplier[1] + enemyLevel - 1;
 });
@@ -424,6 +572,12 @@ btnChests.addEventListener(`click`, function (e) {
   }
 });
 
+btnBoss.addEventListener(`click`, function (e) {
+  updateButtonValues();
+  bossFightInterval = setInterval(bossFight, 33);
+});
+
+//----------------------------------------------------------------------------------
 //ITEMS
 //I made it a variable so i can cancel it (maybe a debuff??)
 const triTipInterval = setInterval(itemFunctions, 500, `Tri-tip Dagger`);

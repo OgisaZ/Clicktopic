@@ -20,7 +20,7 @@ div {
   width: 100%;
 }
 .welcome-text {
-  font-size: 20px;
+  font-size: 18px;
 }
 .boldena-font {
   font-family: Boldena;
@@ -84,6 +84,21 @@ div {
 .inline-div {
   display: inline;
 }
+.boss-button {
+  margin-top: 5%;
+  width: 90%;
+  font-size: 20px;
+  border-radius: 50px;
+  border-color: rgb(170, 206, 207);
+  box-shadow: 0 3px rgb(170, 206, 207);
+  background-color: rgb(118, 163, 165);
+  transition: 0.5s;
+  visibility: hidden;
+}
+.timer {
+  font-size: 22px;
+  user-select: none;
+}
 .history-text {
   display: inline-block;
   height: 100px;
@@ -92,6 +107,7 @@ div {
   opacity: 0;
   transition: opacity 1s;
   font-size: 180%;
+  user-select: none;
 }
 .chests {
   padding: 3%;
@@ -123,6 +139,7 @@ div {
 }
 #survivor {
   color: #33334d;
+  width: auto;
 }
 #survivor-text {
   display: block;
@@ -138,9 +155,11 @@ div {
 #drone {
   opacity: 0;
   color: rgb(54, 91, 92);
+  width: auto;
 }
 #clickMultiplier {
   color: #995e4f;
+  width: auto;
 }
 #farm-name {
   opacity: 0.3;
