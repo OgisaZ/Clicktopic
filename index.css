@@ -224,3 +224,6 @@ div {
 .tooltip:hover .tooltiptext {
   opacity: 1;
 }
+.reset {
+  align-items: end;
+}

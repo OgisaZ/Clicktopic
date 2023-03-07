@@ -202,19 +202,17 @@ function bossPicker(bossKilled = false) {
   }
 }
 function displayBoss() {
-  setInterval(() => {
-    if (
-      globalEnemyKillCount >=
-      (bosses.flat().indexOf(false) - 1 + 1) * enemyLevel * 7
-    ) {
-      btnBoss.style.visibility = `visible`;
-    } else {
-      btnBoss.style.visibility = `hidden`;
-    }
-    if (bossFightCurrent === true) {
-      btnBoss.style.visibility = `hidden`;
-    }
-  }, 33);
+  if (
+    globalEnemyKillCount >=
+    (bosses.flat().indexOf(false) - 1 + 1) * enemyLevel * 7
+  ) {
+    btnBoss.style.visibility = `visible`;
+  } else {
+    btnBoss.style.visibility = `hidden`;
+  }
+  if (bossFightCurrent === true) {
+    btnBoss.style.visibility = `hidden`;
+  }
 }
 let time = 60;
 
@@ -396,7 +394,7 @@ let enemyTesterInterval = setInterval(enemyTester, 33);
 bossPicker();
 updateButtonValues();
 updateIdleGold();
-displayBoss();
+let displayBossInterval = setInterval(displayBoss, 33);
 // I made them variables so i could cancel them, and also looks better without the setInterval thing on the whole function
 let updategoldCountInterval = setInterval(updategoldCount, 33);
 let automatedDamageInterval = setInterval(automatedDamage, 33);
@@ -632,3 +630,12 @@ function itemFunctions(item) {
       break;
   }
 }
+
+document.querySelector(`.reset`).addEventListener(`click`, function () {
+  clearInterval(enemyTesterInterval);
+  clearInterval(displayBossInterval);
+  clearInterval(updategoldCountInterval);
+  clearInterval(automatedDamageInterval);
+  localStorage.clear();
+  location.reload();
+});
