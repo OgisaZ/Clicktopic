@@ -80,11 +80,11 @@ let bosses = JSON.parse(localStorage.getItem(`bosses`)) || [
   [`Gojak`, false],
   [`Dizna`, false],
   [`M3S-B0R`, false],
-  [`MuskAvirje`, false],
-  [`Novak Telsa`, false],
-  [`Nikola Djokovic`, false],
+  [`Cabron`, false],
+  [`Coaxial fi-bro`, false],
+  [`UTP RJ-45`, false],
   [`Stiropor`, false],
-  [`Picajzla`, false],
+  [`Kukri`, false],
   [`ByBaj`, false],
   [`Kharton`, false],
   [`Jovan Fajnisevic`, false],
@@ -171,15 +171,21 @@ function bossPicker(bossKilled = false) {
     if (bosses[bosses.indexOf(boss)][1] === false) {
       bossesNumero = bosses.indexOf(boss);
     }
-    if (bosses[bosses.length - 1][1]) {
-      for (const boss of bosses) {
-        boss[1] = false;
-      }
-    }
+
     if (bossKilled) {
       bosses[bossesNumero][1] = true;
       bossKilled = false;
       localStorage.setItem(`bosses`, JSON.stringify(bosses));
+    }
+    if (bosses[bosses.length - 1][1]) {
+      for (const boss of bosses) {
+        boss[1] = false;
+      }
+      bossHealth = enemyLevel * 2 * ((bossesNumero + 1) * 100);
+      maxBossHealth = bossHealth;
+      localStorage.setItem(`bosses`, JSON.stringify(bosses));
+      nextBoss = bosses[0][0];
+      return nextBoss;
     }
     if (bosses[bossesNumero][1] === false) {
       nextBoss = bosses[bossesNumero][0];
@@ -201,7 +207,7 @@ function enemyLevelUp() {
     enemyGoldOnKill = enemyLevel * 3;
   }
   //If you kill enough enemies:
-  if (bosses[enemyLevel - 1][1]) {
+  if (bossKilled) {
     //Updates the enemy level
     enemyLevel++;
     //Change the text
@@ -209,7 +215,7 @@ function enemyLevelUp() {
     //Set the kill count back to 0
     enemyKillCount = 0;
     //Get more gold on kill
-
+    bossKilled = false;
     updateHistoryText(`LEVEL UP! Now level ${enemyLevel}`);
   }
   //Add stuff to localStorage
@@ -232,6 +238,7 @@ function displayBoss() {
     btnBoss.style.visibility = `hidden`;
   }
 }
+let bossKilled = false;
 let time = 30;
 let i = 1;
 function bossFight() {
@@ -287,11 +294,13 @@ function bossFight() {
 
     enemyTesterInterval = setInterval(enemyTester, 33);
     //You get the nextBoss name here
+    bossKilled = true;
+    enemyLevelUp();
     bossPicker(true);
     enemyPicker();
     updateButtonValues();
     updateIdleGold();
-    enemyLevelUp();
+
     i = 1;
   } else {
     btngold.value = `${nextBoss}\nHealth:${bossHealth.toFixed(1)}`;
