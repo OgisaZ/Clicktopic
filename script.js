@@ -94,8 +94,8 @@ let enemyHealth;
 let enemyMaxHealth;
 //Used to see when you will level up. Hold your mouse over the level number to see how many more you need to kill to level up
 let enemyKillCount = Number(localStorage.getItem(`enemyKillCount`)) || 0;
-let globalEnemyKillCount =
-  Number(localStorage.getItem(`globalEnemyKillCount`)) || 0;
+// let globalEnemyKillCount =
+// Number(localStorage.getItem(`globalEnemyKillCount`)) || 0;
 let enemyLevel = Number(localStorage.getItem(`enemyLevel`)) || 1;
 //How many you need to kill for them to level up
 let nextLevelReq;
@@ -107,6 +107,7 @@ let enemyGoldOnKill = enemyLevel * 1.5;
 let randomNumber;
 //How much money roll of pennies item gets you on kill
 let rollOfPenniesBuff = Number(localStorage.getItem(`rollOfPenniesBuff`)) || 0;
+let changeBackCrit;
 //How much damage you deal according to how many crowbars you have
 let crowbarBuff = counts[4] * 0.5 + 1;
 //Arrow function to give you a random item
@@ -123,14 +124,25 @@ const properties = JSON.parse(localStorage.getItem(`properties`)) || {
 let idleGold = Number(localStorage?.getItem(`idleGold`)) || 0;
 //How much damage you deal on click. Mostly used with crowbar calculations
 let damageOnClick = properties.clickMultiplier[1] + enemyLevel - 1;
-
+const now = new Date();
+const welcomeText = [
+  `Hello`,
+  `Happy ${new Intl.DateTimeFormat(navigator.language, {
+    weekday: `long`,
+  }).format(now)}`,
+  `G'day`,
+  `Welcome back`,
+  `What's up`,
+  `Thanks`,
+  `Ready, Set`,
+];
 //Display on screen
 labelgoldNumber.textContent = gold.toFixed(1);
 labelEnemyLevel.textContent = enemyLevel;
 localStorage.getItem(`farmName`)
-  ? (labelWelcome.textContent = `Welcome back, ${localStorage.getItem(
-      `farmName`
-    )}`)
+  ? (labelWelcome.textContent = `${
+      welcomeText[Math.trunc(Math.random() * welcomeText.length)]
+    }, ${localStorage.getItem(`farmName`)}`)
   : (labelWelcome.textContent = ``);
 labelItemList.innerHTML = ``;
 for (const mov of items) {
@@ -152,11 +164,17 @@ function enemyPicker() {
   const randomEnemy = enemies[randomNumber];
   btngold.value = `${randomEnemy} \n`;
 }
+
 let bossesNumero = 0;
 function bossPicker(bossKilled = false) {
   for (const boss of bosses) {
     if (bosses[bosses.indexOf(boss)][1] === false) {
       bossesNumero = bosses.indexOf(boss);
+    }
+    if (bosses[bosses.length - 1][1]) {
+      for (const boss of bosses) {
+        boss[1] = false;
+      }
     }
     if (bossKilled) {
       bosses[bossesNumero][1] = true;
@@ -183,8 +201,7 @@ function enemyLevelUp() {
     enemyGoldOnKill = enemyLevel * 3;
   }
   //If you kill enough enemies:
-  if (enemyKillCount >= nextLevelReq && bosses[enemyLevel - 1][1]) {
-    console.log(`entered here!`);
+  if (bosses[enemyLevel - 1][1]) {
     //Updates the enemy level
     enemyLevel++;
     //Change the text
@@ -216,12 +233,11 @@ function displayBoss() {
   }
 }
 let time = 30;
-
 let i = 1;
-
 function bossFight() {
   clearInterval(enemyTesterInterval);
-
+  enemyKillCount = 0;
+  localStorage.setItem(`enemyKillCount`, enemyKillCount);
   bossFightCurrent = true;
   if (i === 1) {
     const timer = setInterval(function () {
@@ -242,14 +258,17 @@ function bossFight() {
         updateButtonValues();
         updateIdleGold();
         labelTimer.textContent = ``;
-        time = 60;
+        time = 30;
         i = 1;
+        labelHistoryText.style.color = `red`;
+        updateHistoryText(`Failed to defeat ${nextBoss}`);
+        setTimeout(() => (labelHistoryText.style.color = `black`), 1500);
       }
       if (!bossFightCurrent) {
         clearInterval(timer);
         labelTimer.textContent = ``;
-        time = 60;
-        enemyKillCount = 0;
+        time = 30;
+
         i = 1;
       }
     }, 1000);
@@ -260,7 +279,7 @@ function bossFight() {
     //The gold you get on kill is calculated:
     gold = gold + (maxBossHealth / 2) * (enemyGoldOnKill + rollOfPenniesBuff);
     updateHistoryText(
-      `$` +
+      `Got $` +
         ((maxBossHealth / 2) * (enemyGoldOnKill + rollOfPenniesBuff)).toFixed(2)
     );
 
@@ -279,19 +298,18 @@ function bossFight() {
     i++;
   }
 }
-
+let changeBackHistory;
 function updateHistoryText(string) {
   //Change the opacity from 0 to 1 with a transition effect...
+  clearTimeout(changeBackHistory);
   labelHistoryText.style.opacity = 1;
   labelHistoryText.style.transition = `1s`;
-  labelHistoryText.textContent = `Got ${string}!`;
+  labelHistoryText.textContent = `${string}!`;
   //...then back to 0
-  if (labelHistoryText.style.opacity <= 1) {
-    setTimeout(e => {
-      labelHistoryText.style.opacity = 0;
-      labelHistoryText.style.transition = `1s`;
-    }, 2000);
-  }
+  changeBackHistory = setTimeout(e => {
+    labelHistoryText.style.opacity = 0;
+    labelHistoryText.style.transition = `1s`;
+  }, 1500);
 }
 
 function updateIdleGold() {
@@ -311,12 +329,12 @@ function enemyTester() {
     //The gold you get on kill is calculated:
     gold = gold + (randomNumber + 1) * (enemyGoldOnKill + rollOfPenniesBuff);
     updateHistoryText(
-      `$` +
+      `Got $` +
         ((randomNumber + 1) * (enemyGoldOnKill + rollOfPenniesBuff)).toFixed(2)
     );
     enemyKillCount++;
-    globalEnemyKillCount++;
-    localStorage.setItem(`globalEnemyKillCount`, globalEnemyKillCount);
+    // globalEnemyKillCount++;
+    // localStorage.setItem(`globalEnemyKillCount`, globalEnemyKillCount);
 
     enemyPicker();
     enemyLevelUp();
@@ -451,11 +469,12 @@ btngold.addEventListener(`click`, function () {
     const chance = counts[1] * 0.1;
     //Randomly see if you crit
     if (chance >= Math.random()) {
+      clearTimeout(changeBackCrit);
       //Make "CRIT" text visible for 500 millisecs
       document.querySelector(`.crit-text`).style.opacity = 1;
-      setTimeout(
+      changeBackCrit = setTimeout(
         e => (document.querySelector(`.crit-text`).style.opacity = 0),
-        500
+        150
       );
       //Double the damage on click
       gold = gold + damageOnClick;
@@ -491,7 +510,7 @@ btnsurvivor.addEventListener(`click`, function (e) {
     //Update the idle gold production,the price of the property, and text
     updateIdleGold();
     updatePrice(`survivor`);
-    updateHistoryText(`survivor`);
+    updateHistoryText(`Got survivor`);
     updateButtonValues();
   }
 });
@@ -505,7 +524,7 @@ btnClickMultiplier.addEventListener(`click`, function () {
     properties.clickMultiplier[1] = properties.clickMultiplier[1] + 0.2;
     updateIdleGold();
     updatePrice(`clickMultiplier`);
-    updateHistoryText(`Click Multiplier`);
+    updateHistoryText(`Got Click Multiplier`);
     updateButtonValues();
   }
 });
@@ -522,7 +541,7 @@ btnDrone.addEventListener(`click`, function (e) {
     //Update the idle gold production,the price of the property, and text
     updateIdleGold();
     updatePrice(`drone`);
-    updateHistoryText(`drone`);
+    updateHistoryText(`Got drone`);
     updateButtonValues();
   }
 });
@@ -562,7 +581,7 @@ btnChests.addEventListener(`click`, function (e) {
     let randomItem = items[randomItemNumber()];
     updatePrice(`chests`);
     numberOfItems(randomItem);
-    updateHistoryText(randomItem);
+    updateHistoryText(`Got ${randomItem}`);
     btnChests.value = `Buy chest\n ${properties.chests[0].toFixed(1)}`;
     //Put the item in your inventory
     inventory.push(randomItem);
@@ -577,6 +596,7 @@ btnChests.addEventListener(`click`, function (e) {
 });
 
 btnBoss.addEventListener(`click`, function (e) {
+  btnBoss.style.visibility = `hidden`;
   updateButtonValues();
   bossFightInterval = setInterval(bossFight, 33);
 });
@@ -647,24 +667,6 @@ document.querySelector(`.reset`).addEventListener(`click`, function () {
   setTimeout(() => location.reload(), 1000);
   setInterval(() => {
     localStorage.clear();
-    bosses = [
-      [`Cedonj`, false],
-      [`Pablo`, false],
-      [`lane`, false],
-      [`Orbito`, false],
-      [`Sebastian`, false],
-      [`Gojak`, false],
-      [`Dizna`, false],
-      [`M3S-B0R`, false],
-      [`MuskAvirje`, false],
-      [`Novak Telsa`, false],
-      [`Nikola Djokovic`, false],
-      [`Stiropor`, false],
-      [`Picajzla`, false],
-      [`ByBaj`, false],
-      [`Kharton`, false],
-      [`Jovan Fajnisevic`, false],
-    ];
     console.log(`Resetting...`);
   }, 1);
 });

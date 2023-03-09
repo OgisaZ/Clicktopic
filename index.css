@@ -19,8 +19,13 @@ div {
   height: 100%;
   width: 100%;
 }
+br {
+  user-select: none;
+}
 .welcome-text {
-  font-size: 18px;
+  font-size: 20px;
+  display: inline-block;
+  width: 80%;
 }
 .boldena-font {
   font-family: Boldena;
@@ -92,8 +97,14 @@ div {
   border-color: rgb(170, 206, 207);
   box-shadow: 0 3px rgb(170, 206, 207);
   background-color: rgb(118, 163, 165);
-  transition: 0.5s;
+  transition-property: background-color;
+  transition-duration: 0.5s;
   visibility: hidden;
+}
+.boss-button:hover {
+  background-color: rgb(150, 23, 54);
+  transition-property: background-color;
+  transition-duration: 0.5s;
 }
 .timer {
   font-size: 22px;
@@ -106,7 +117,7 @@ div {
   padding: 25px;
   opacity: 0;
   transition: opacity 1s;
-  font-size: 180%;
+  font-size: 150%;
   user-select: none;
 }
 .chests {
@@ -176,6 +187,7 @@ div {
 }
 #farm-name-button {
   opacity: 0;
+  user-select: none;
 }
 #farm-name:hover {
   opacity: 1;
@@ -189,12 +201,14 @@ div {
   font-size: 25px;
   margin-left: 2%;
 }
+
 .char-remaining {
   display: inline-block;
   width: 70%;
   text-align: left;
   opacity: 0;
   transition: 0.5s;
+  user-select: none;
 }
 .tool-tip-level {
   font-size: 15px;
