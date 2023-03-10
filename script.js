@@ -8,6 +8,7 @@ const labelEnemyLevel = document.getElementById(`enemy-level`);
 const labelToolTip = document.querySelector(`.tool-tip-level`);
 const labelWelcome = document.querySelector(`.welcome-text`);
 const labelCharactersRemain = document.querySelector(`.char-remaining`);
+const labelIdleDPS = document.querySelector(`.dps`);
 //Property labels
 const labelSurvivor = document.getElementById(`survivor-text`);
 const labelClickMultiplier = document.getElementById(`click-multiplier-text`);
@@ -27,6 +28,8 @@ const btnsurvivor = document.getElementById(`survivor`);
 const btnChests = document.querySelector(`.chests`);
 const btnDrone = document.getElementById(`drone`);
 //Get cash from localStorage if exists (|| if it doesn't)
+const modal = document.querySelector(`.modal`);
+const modalText = document.querySelector(`.modal-content`);
 let gold = Number(localStorage?.getItem(`gold`)) || 0;
 //All the items you have (from chests)
 const inventory = JSON.parse(localStorage.getItem(`inventory`)) || [];
@@ -105,6 +108,8 @@ let nextLevelReqText;
 let enemyGoldOnKill = enemyLevel * 1.5;
 //Used for enemy health calculation
 let randomNumber;
+let dpsCalc = [];
+let dps;
 //How much money roll of pennies item gets you on kill
 let rollOfPenniesBuff = Number(localStorage.getItem(`rollOfPenniesBuff`)) || 0;
 let changeBackCrit;
@@ -150,8 +155,43 @@ for (const mov of items) {
   if (counts[positionInArray] === 0) continue;
   labelItemList.innerHTML += `${counts[positionInArray]}x ${mov}<br>`;
 }
+modalText.textContent = ``;
 //----------------------------------------------------------------------------
+let j = 0;
+let awayTimeSec;
 //FUNCTIONS
+function timeInSec() {
+  if (j === 0) {
+    awayTimeSec = Math.trunc((now - localStorage.getItem(`then`)) / 1000);
+
+    //If you were away for 10 secs or less
+    if (awayTimeSec <= 10 || idleGold === 0) {
+      awayTimeSec = 0;
+      modal.style.display = `none`;
+      //Else
+    } else {
+      modal.style.display = `block`;
+      let min = String(Math.trunc(awayTimeSec / 60)).padStart(2, 0);
+      if (min >= 60) min = min - 60 * Math.trunc(awayTimeSec / 60 / 60);
+      modalText.textContent = `You were away for ${String(
+        Math.trunc(awayTimeSec / 60 / 60)
+      ).padStart(2, 0)}:${String(min).padStart(2, 0)}:${String(
+        Math.trunc(awayTimeSec % 60)
+      ).padStart(2, 0)} and your dps was ${dps}.\n You earned $${(
+        awayTimeSec * dps
+      ).toFixed(1)}`;
+      gold = gold + awayTimeSec * dps;
+    }
+  }
+  const then = new Date().getTime();
+  localStorage.setItem(`then`, then);
+  j++;
+}
+window.onclick = function (e) {
+  if (e.target !== modal) {
+    modal.style.display = `none`;
+  }
+};
 
 function enemyPicker() {
   //Take a random item from 0 to the length of enemies array
@@ -379,6 +419,27 @@ function automatedDamage() {
     enemyHealth = enemyHealth - idleGold;
   }
 }
+//Has to be undefined for calculations to work
+let calcDPSTimeout;
+function calcDPS() {
+  //Every 33 milisec, add your current idleGold to dpsCalc array
+  dpsCalc.push(idleGold);
+  //If there is no timeout currently happening,
+  if (calcDPSTimeout === undefined) {
+    //Every second,
+    calcDPSTimeout = setTimeout(() => {
+      //Calculate your dps. I do this by taking the dpsCalc array and adding every value up, then resetting the array back to empty, so every second it will fill up to 31 values, then back to 0. When at 31 (first 29) sum every value up. That is your dps
+      dps = dpsCalc.reduce((acc, mov) => acc + mov, 0).toFixed(3);
+      dps <= 0
+        ? (labelIdleDPS.textContent = `0`)
+        : (labelIdleDPS.textContent = `${dps}`);
+
+      dpsCalc = [];
+      //Set it to undefined so program knows that calcDPSTimeout has finished execution
+      calcDPSTimeout = undefined;
+    }, 1000);
+  }
+}
 
 function updateButtonValues() {
   //Update survivor numbers
@@ -428,6 +489,8 @@ let displayBossInterval = setInterval(displayBoss, 33);
 // I made them variables so i could cancel them, and also looks better without the setInterval thing on the whole function
 let updategoldCountInterval = setInterval(updategoldCount, 33);
 let automatedDamageInterval = setInterval(automatedDamage, 33);
+let calcDPSInterval = setInterval(calcDPS, 33);
+let timeInSecInterval = setInterval(timeInSec, 2200);
 
 function updatePrice(property) {
   //Locate the current price of property
