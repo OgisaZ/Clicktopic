@@ -37,6 +37,13 @@
             id="drone"
           /><br>
         </span>
+        <span><span id="turret-text">Turret</span>
+        <input type="button" value="Buy Turret" class="buying boldena-font" id="turret">
+        </span><br>
+        <span>
+          <span id="minions-text">Minions</span>
+      <input type="button" value="Buy Minions" class="buying boldena-font" id="minions">
+       </span>
         </span>
       </div>
       <!-- CENTER -->
@@ -60,7 +67,7 @@
 
           </span>
         </form>
-        <span class="gold-styling">$<span class="gold">23</span></span><br>
+        <span class="gold-styling"><span class="gold">23</span></span><br>
         <span>Idle DPS:<span class="dps">Calculating...</span></span>  <br>
         <!-- Levels and tooltip -->
         <span>Level:</span>
@@ -72,6 +79,7 @@
         <span class="crit-text">CRIT!</span><br>
         
         <input type="button" value="reset" class="boldena-font reset"><br>
+        <span><progress id="progress" value="32" max="100"></progress></span><br>
         <span>
           <!-- The gold button -->
           <span class="modal">
@@ -84,8 +92,10 @@
             class="gold-button boldena-font ripple"
           />
         </span><br>
-        <span><input type="button" class="boss-button boldena-font"></span><br>
+        <!-- Boss button -->
+        <span class="tooltipboss"><input type="button" class="boss-button boldena-font"><span class="tooltipbosstext tool-tip-boss">AA</span></span><br>
         <span class="timer"></span><br>
+
         <span class="history-text">where am i</span>
       </div>
       <!-- RIGHT -->

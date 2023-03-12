@@ -31,7 +31,7 @@ br {
   font-family: Boldena;
 }
 .gold {
-  font-size: 180%;
+  font-size: 173%;
 }
 .gold-styling {
   font-size: 25px;
@@ -90,6 +90,7 @@ br {
 }
 
 .buying {
+  font-size: 90%;
   width: 30%;
   border-radius: 50px;
   border-color: gainsboro;
@@ -162,10 +163,7 @@ br {
   height: 10%;
   text-align: left;
 }
-#survivor {
-  color: #33334d;
-  width: auto;
-}
+
 #survivor-text {
   display: block;
 }
@@ -177,13 +175,38 @@ br {
   opacity: 0;
   transition: 0.5s;
 }
+#turret-text {
+  display: block;
+  opacity: 0;
+  transition: 0.5s;
+}
+#minions-text {
+  display: block;
+  opacity: 0;
+  transition: 0.5s;
+}
+#survivor {
+  color: #33334d;
+  width: auto;
+}
+
+#clickMultiplier {
+  color: #995e4f;
+  width: auto;
+}
 #drone {
   opacity: 0;
   color: rgb(54, 91, 92);
   width: auto;
 }
-#clickMultiplier {
-  color: #995e4f;
+#turret {
+  opacity: 0;
+  color: rgb(54, 91, 92);
+  width: auto;
+}
+#minions {
+  opacity: 0;
+  color: cadetblue;
   width: auto;
 }
 #farm-name {
@@ -252,6 +275,34 @@ br {
 .tooltip:hover .tooltiptext {
   opacity: 1;
 }
+.tooltipboss {
+  position: relative;
+  border-bottom: 1px dottet black;
+}
+.tooltipboss .tooltipbosstext {
+  visibility: hidden;
+  transition: opacity 0.5s;
+  width: 120px;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+  white-space: pre-line;
+  /* Position the tooltip */
+  position: absolute;
+  z-index: 1;
+  top: 100%;
+  left: 50%;
+  margin-left: -60px;
+  user-select: none;
+}
+.tooltipboss:hover .tooltipbosstext {
+  visibility: visible;
+}
+.tool-tip-boss {
+  display: block;
+}
 .reset {
   align-items: end;
   visibility: hidden;
@@ -284,4 +335,9 @@ br {
   padding: 20px;
 
   width: 80%;
+}
+#progress {
+  visibility: hidden;
+  width: 90%;
+  background-color: red;
 }

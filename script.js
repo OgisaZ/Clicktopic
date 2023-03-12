@@ -6,6 +6,7 @@ const labelHistoryText = document.querySelector(`.history-text`);
 const labelItemList = document.getElementById(`items-list`);
 const labelEnemyLevel = document.getElementById(`enemy-level`);
 const labelToolTip = document.querySelector(`.tool-tip-level`);
+const labelBossToolTip = document.querySelector(`.tool-tip-boss`);
 const labelWelcome = document.querySelector(`.welcome-text`);
 const labelCharactersRemain = document.querySelector(`.char-remaining`);
 const labelIdleDPS = document.querySelector(`.dps`);
@@ -13,7 +14,12 @@ const labelIdleDPS = document.querySelector(`.dps`);
 const labelSurvivor = document.getElementById(`survivor-text`);
 const labelClickMultiplier = document.getElementById(`click-multiplier-text`);
 const labelDrone = document.getElementById(`drone-text`);
+const labelTurret = document.getElementById(`turret-text`);
+const labelMinions = document.getElementById(`minions-text`);
+
+//Boss timer label
 const labelTimer = document.querySelector(`.timer`);
+const progressBar = document.getElementById(`progress`);
 //Inputs
 const inputFarmName = document.getElementById(`farm-name`);
 //Get the farm name from localStorage
@@ -23,10 +29,12 @@ const btngold = document.querySelector(`.gold-button`);
 const btnFarmName = document.getElementById(`farm-name-button`);
 const btnBoss = document.querySelector(`.boss-button`);
 //Property Buttons
-const btnClickMultiplier = document.getElementById(`clickMultiplier`);
 const btnsurvivor = document.getElementById(`survivor`);
-const btnChests = document.querySelector(`.chests`);
+const btnClickMultiplier = document.getElementById(`clickMultiplier`);
 const btnDrone = document.getElementById(`drone`);
+const btnTurret = document.getElementById(`turret`);
+const btnMinions = document.getElementById(`minions`);
+const btnChests = document.querySelector(`.chests`);
 //Get cash from localStorage if exists (|| if it doesn't)
 const modal = document.querySelector(`.modal`);
 const modalText = document.querySelector(`.modal-content`);
@@ -47,33 +55,52 @@ const counts =
   JSON.parse(localStorage.getItem(`counts`)) || new Array(items.length).fill(0);
 //Array of enemies. The arrangement of enemies are in the array are important
 const enemies = [
-  `Lesser Wisp`, //3 hp
-  `Jellyfish`, //6 hp
-  `Vermin`, //9 hp
-  `Alpha Construct`, //12 hp
-  `Beetle`, //15 hp
-  `Blind Pest`, //18 hp
-  `Lemurian`, //21 hp
-  `Imp`, //24 hp
-  `Vulture`, //27 hp
-  `Stone Golem`, //30 hp
-  `Mini Mushrum`, //33 hp
-  `Brass Contraption`, //36 hp
-  `Beetle Guard`, //39 hp
-  `Bison`, //42 hp
-  `Greater Wisp`, //45 hp
-  `Gup`, //48 hp
-  `Clay Templar`, //51 hp
-  `Elder Lemurian`, //54 hp
-  //Ovi gore su svi hp na level 1, ovako se scaluje hp sa levelima:
-  //enemyHealth = (gde se nalaze u array(npr wisp je 1)) * 2.5 * (enemyLevel * 1.2);
-  //Znaci wisp se nalazi na poziciji 1, znaci 1 * 2.5 = 2.5 i ako je level 1   2.5* 1.2 = 3 hp
+  `Francua`,
+  `Lesser Wisp`,
+  `Kliker`,
+  `Jellyfish`,
+  `Vermin`,
+  `Alpha Construct`,
+  `Beetle`,
+  `Kobasica`,
+  `Baboon`,
+  `Blind Pest`,
+  `Gaysus`,
+  `Footer`,
+  `Lemurian`,
+  `Imp`,
+  `STBK`,
+  `Vulture`,
+  `Siptar`,
+  `Krankenstein`,
+  `Stone Golem`,
+  `Ormar & Orman`,
+  `Mini Mushrum`,
+  `Randall`,
+  `Brass Contraption`,
+  `Ford F-150`,
+  `Beetle Guard`,
+  `Bison`,
+  `Mica Copper`,
+  `H20`,
+  `Microwave`,
+  `Greater Wisp`,
+  `Gup`,
+  `Clay Templar`,
+  `PVC Stolarija`,
+  `Elder Lemurian`,
 ];
 let nextBoss;
 let bossHealth;
 let bossFightCurrent = false;
 let bossFightInterval;
 let maxBossHealth;
+let bossBuff = localStorage.getItem(`bossBuff`) || 0;
+let timeBuff = localStorage.getItem(`timeBuff`) || 0;
+let bossesNumero = 0;
+let bossKilled = false;
+let time = localStorage.getItem(`time`) || 30;
+let i = 1;
 let bosses = JSON.parse(localStorage.getItem(`bosses`)) || [
   [`Cedonj`, false],
   [`Pablo`, false],
@@ -90,6 +117,7 @@ let bosses = JSON.parse(localStorage.getItem(`bosses`)) || [
   [`Kukri`, false],
   [`ByBaj`, false],
   [`Kharton`, false],
+  [`Ivca`, false],
   [`Jovan Fajnisevic`, false],
 ];
 let enemyHealth;
@@ -110,9 +138,12 @@ let enemyGoldOnKill = enemyLevel * 1.5;
 let randomNumber;
 let dpsCalc = [];
 let dps;
+let j = 0;
+let awayTimeSec;
 //How much money roll of pennies item gets you on kill
 let rollOfPenniesBuff = Number(localStorage.getItem(`rollOfPenniesBuff`)) || 0;
 let changeBackCrit;
+let changeBackHistory;
 //How much damage you deal according to how many crowbars you have
 let crowbarBuff = counts[4] * 0.5 + 1;
 //Arrow function to give you a random item
@@ -120,10 +151,12 @@ const randomItemNumber = () => Math.trunc(Math.random() * items.length);
 //Get the object from localStorage if exists (|| if it doesn't)
 //property:[cost,how many you have, how much this property makes]
 const properties = JSON.parse(localStorage.getItem(`properties`)) || {
-  survivor: [20, 0, 0.001, 0],
+  survivor: [20, 0, 0.003, 0],
   clickMultiplier: [40, 1, 0],
   chests: [100, 0, 0],
-  drone: [300, 0, 0.005, 0],
+  drone: [250, 0, 0.02, 0],
+  turret: [400, 0, 0.05, 0],
+  minions: [600, 0, 0.1],
 };
 //Get idle gold from localStorage. Will explain how it is calculated it its function
 let idleGold = Number(localStorage?.getItem(`idleGold`)) || 0;
@@ -142,7 +175,7 @@ const welcomeText = [
   `Ready, Set`,
 ];
 //Display on screen
-labelgoldNumber.textContent = gold.toFixed(1);
+labelgoldNumber.textContent = addCurrency(gold.toFixed(2));
 labelEnemyLevel.textContent = enemyLevel;
 localStorage.getItem(`farmName`)
   ? (labelWelcome.textContent = `${
@@ -157,15 +190,18 @@ for (const mov of items) {
 }
 modalText.textContent = ``;
 //----------------------------------------------------------------------------
-let j = 0;
-let awayTimeSec;
+
 //FUNCTIONS
 function timeInSec() {
   if (j === 0) {
     awayTimeSec = Math.trunc((now - localStorage.getItem(`then`)) / 1000);
 
     //If you were away for 10 secs or less
-    if (awayTimeSec <= 10 || idleGold === 0) {
+    if (
+      awayTimeSec <= 10 ||
+      idleGold === 0 ||
+      localStorage.getItem(`then`) === null
+    ) {
       awayTimeSec = 0;
       modal.style.display = `none`;
       //Else
@@ -177,9 +213,9 @@ function timeInSec() {
         Math.trunc(awayTimeSec / 60 / 60)
       ).padStart(2, 0)}:${String(min).padStart(2, 0)}:${String(
         Math.trunc(awayTimeSec % 60)
-      ).padStart(2, 0)} and your dps was ${dps}.\n You earned $${(
-        awayTimeSec * dps
-      ).toFixed(1)}`;
+      ).padStart(2, 0)} and your dps was ${dps}.\n You earned ${addCurrency(
+        (awayTimeSec * dps).toFixed(1)
+      )}`;
       gold = gold + awayTimeSec * dps;
     }
   }
@@ -205,7 +241,6 @@ function enemyPicker() {
   btngold.value = `${randomEnemy} \n`;
 }
 
-let bossesNumero = 0;
 function bossPicker(bossKilled = false) {
   for (const boss of bosses) {
     if (bosses[bosses.indexOf(boss)][1] === false) {
@@ -221,17 +256,35 @@ function bossPicker(bossKilled = false) {
       for (const boss of bosses) {
         boss[1] = false;
       }
-      bossHealth = enemyLevel * 2 * ((bossesNumero + 1) * 100);
-      maxBossHealth = bossHealth;
+      bossBuff = bossBuff + 25;
+      timeBuff += 30;
+      time = time + timeBuff;
+      localStorage.setItem(`time`, time);
+      localStorage.setItem(`timeBuff`, timeBuff);
+      localStorage.setItem(`bossBuff`, bossBuff);
       localStorage.setItem(`bosses`, JSON.stringify(bosses));
       nextBoss = bosses[0][0];
+      bossHealth =
+        enemyLevel *
+        2 *
+        ((bossesNumero + 1) * 100) *
+        (bossBuff === 0 ? 1 : bossBuff);
+      maxBossHealth = bossHealth;
+      labelBossToolTip.textContent = `Boss health: ${bossHealth}`;
       return nextBoss;
     }
     if (bosses[bossesNumero][1] === false) {
       nextBoss = bosses[bossesNumero][0];
-      bossHealth = enemyLevel * 2 * ((bossesNumero + 1) * 100);
+      bossHealth =
+        enemyLevel *
+        2 *
+        ((bossesNumero + 1) * 100) *
+        (bossBuff === 0 ? 1 : bossBuff);
       maxBossHealth = bossHealth;
       localStorage.setItem(`bosses`, JSON.stringify(bosses));
+      labelBossToolTip.textContent = `Boss Health: ${bossHealth}\r\n Time to beat: ${
+        30 + timeBuff
+      }s`;
       return nextBoss;
     }
   }
@@ -271,18 +324,20 @@ function enemyLevelUp() {
 function displayBoss() {
   if (enemyKillCount >= nextLevelReq) {
     btnBoss.style.visibility = `visible`;
+    labelBossToolTip.style.opacity = 1;
   } else {
     btnBoss.style.visibility = `hidden`;
+    labelBossToolTip.style.opacity = 0;
   }
   if (bossFightCurrent === true) {
     btnBoss.style.visibility = `hidden`;
+    labelBossToolTip.style.opacity = 0;
   }
 }
-let bossKilled = false;
-let time = 30;
-let i = 1;
+
 function bossFight() {
   clearInterval(enemyTesterInterval);
+
   enemyKillCount = 0;
   localStorage.setItem(`enemyKillCount`, enemyKillCount);
   bossFightCurrent = true;
@@ -305,16 +360,18 @@ function bossFight() {
         updateButtonValues();
         updateIdleGold();
         labelTimer.textContent = ``;
-        time = 30;
+        time = 30 + timeBuff;
         i = 1;
         labelHistoryText.style.color = `red`;
         updateHistoryText(`Failed to defeat ${nextBoss}`);
+        progressBar.style.visibility = `hidden`;
         setTimeout(() => (labelHistoryText.style.color = `black`), 1500);
       }
       if (!bossFightCurrent) {
         clearInterval(timer);
         labelTimer.textContent = ``;
-        time = 30;
+        progressBar.style.visibility = `hidden`;
+        time = 30 + timeBuff;
 
         i = 1;
       }
@@ -326,12 +383,14 @@ function bossFight() {
     //The gold you get on kill is calculated:
     gold = gold + (maxBossHealth / 2) * (enemyGoldOnKill + rollOfPenniesBuff);
     updateHistoryText(
-      `Got $` +
-        ((maxBossHealth / 2) * (enemyGoldOnKill + rollOfPenniesBuff)).toFixed(2)
+      `Got` +
+        addCurrency(
+          ((maxBossHealth / 2) * (enemyGoldOnKill + rollOfPenniesBuff)).toFixed(
+            2
+          )
+        )
     );
-
     clearInterval(bossFightInterval);
-
     enemyTesterInterval = setInterval(enemyTester, 33);
     //You get the nextBoss name here
     bossKilled = true;
@@ -340,14 +399,17 @@ function bossFight() {
     enemyPicker();
     updateButtonValues();
     updateIdleGold();
-
+    labelBossToolTip.style.opacity = 1;
+    progressBar.style.visibility = `hidden`;
     i = 1;
   } else {
     btngold.value = `${nextBoss}\nHealth:${bossHealth.toFixed(1)}`;
+    progressBar.max = maxBossHealth;
+    progressBar.value = bossHealth;
     i++;
   }
 }
-let changeBackHistory;
+
 function updateHistoryText(string) {
   //Change the opacity from 0 to 1 with a transition effect...
   clearTimeout(changeBackHistory);
@@ -365,11 +427,9 @@ function updateIdleGold() {
   //Idle gold is summing up what every property makes every 33 millisecs
 
   idleGold = properties.survivor[2] * properties.survivor[1];
-  idleGold =
-    idleGold + properties.clickMultiplier[2] * properties.clickMultiplier[1];
-  idleGold =
-    idleGold + properties.clickMultiplier[2] * properties.clickMultiplier[1];
   idleGold = idleGold + properties.drone[2] * properties.drone[1];
+  idleGold = idleGold + properties.turret[2] * properties.turret[1];
+  idleGold = idleGold + properties.minions[2] * properties.minions[1];
   localStorage.setItem(`idleGold`, idleGold);
 }
 
@@ -378,8 +438,12 @@ function enemyTester() {
     //The gold you get on kill is calculated:
     gold = gold + (randomNumber + 1) * (enemyGoldOnKill + rollOfPenniesBuff);
     updateHistoryText(
-      `Got $` +
-        ((randomNumber + 1) * (enemyGoldOnKill + rollOfPenniesBuff)).toFixed(2)
+      `Got ` +
+        addCurrency(
+          ((randomNumber + 1) * (enemyGoldOnKill + rollOfPenniesBuff)).toFixed(
+            2
+          )
+        )
     );
     enemyKillCount++;
     // globalEnemyKillCount++;
@@ -394,13 +458,19 @@ function enemyTester() {
     )}`;
   }
 }
-
+function addCurrency(property) {
+  //Adding the $ and 1000 seperators to numbers(also adds 2 decimal places i don't know why)
+  return new Intl.NumberFormat(`en-US`, {
+    style: `currency`,
+    currency: `USD`,
+  }).format(property);
+}
 function updategoldCount() {
   //Every 33 milliseconds (around 30 frames per second)
   //Add the current gold to localStorage
   localStorage.setItem(`gold`, gold);
   //Set the text to be fixed to have 1 decimal place
-  labelgoldNumber.textContent = gold.toFixed(1);
+  labelgoldNumber.textContent = addCurrency(gold.toFixed(2));
   //Add the current properties object to localStorage
   localStorage.setItem(`properties`, JSON.stringify(properties));
   //And add gold for each property per 33 milsec
@@ -409,6 +479,16 @@ function updategoldCount() {
   if (gold >= 200 || properties.drone[1] >= 1 || btnDrone.style.opacity === 1) {
     labelDrone.style.opacity = 1;
     btnDrone.style.opacity = 1;
+    labelTurret.style.opacity = 1;
+    btnTurret.style.opacity = 1;
+  }
+  if (
+    gold >= 600 ||
+    properties.minions[1] >= 1 ||
+    btnMinions.style.opacity === 1
+  ) {
+    labelMinions.style.opacity = 1;
+    btnMinions.style.opacity = 1;
   }
 }
 function automatedDamage() {
@@ -440,22 +520,32 @@ function calcDPS() {
     }, 1000);
   }
 }
-
 function updateButtonValues() {
   //Update survivor numbers
-  btnsurvivor.value = `Buy $${properties.survivor[0].toFixed(0)}`;
+  btnsurvivor.value = `Buy ${addCurrency(properties.survivor[0])}`;
   labelSurvivor.textContent = `Survivor (${properties.survivor[1]})`;
 
-  btnClickMultiplier.value = `Buy $${properties.clickMultiplier[0].toFixed(0)}`;
+  //Update click multiplier numbers
+  btnClickMultiplier.value = `Buy ${addCurrency(
+    properties.clickMultiplier[0]
+  )}`;
   labelClickMultiplier.textContent = `Click Multiplier (${properties.clickMultiplier[1].toFixed(
     1
   )})`;
 
-  btnDrone.value = `Buy $${properties.drone[0].toFixed(0)}`;
+  //Update drone numbers
+  btnDrone.value = `Buy ${addCurrency(properties.drone[0])}`;
   labelDrone.textContent = `Drone (${properties.drone[1]})`;
+  //Update turret numbers
+  btnTurret.value = `Buy ${addCurrency(properties.turret[0])}`;
+  labelTurret.textContent = `Turret (${properties.turret[1]})`;
+  //Update minions numbers
+  btnMinions.value = `Buy ${addCurrency(properties.minions[0])}`;
+  labelMinions.textContent = `Minions (${properties.minions[1]})`;
   //Update chest numbers
-  btnChests.value = `Buy chest\n $${properties.chests[0].toFixed(0)}`;
+  btnChests.value = `Buy chest\n ${addCurrency(properties.chests[0])}`;
 
+  //Update boss button so it has the next boss name on it
   btnBoss.value = `Fight ${nextBoss}`;
 
   //Turn buttons you can't afford to red
@@ -471,24 +561,29 @@ function updateButtonValues() {
     if (gold <= properties.drone[0]) btnDrone.style.backgroundColor = `crimson`;
     else btnDrone.style.backgroundColor = `gainsboro`;
 
+    if (gold <= properties.turret[0])
+      btnTurret.style.backgroundColor = `crimson`;
+    else btnTurret.style.backgroundColor = `gainsboro`;
+    if (gold <= properties.minions[0])
+      btnMinions.style.backgroundColor = `crimson`;
+    else btnMinions.style.backgroundColor = `gainsboro`;
+
     if (gold <= properties.chests[0])
       btnChests.style.backgroundColor = `crimson`;
     else btnChests.style.backgroundColor = `gainsboro`;
   }, 100);
 }
-//TODO
-// localStorage.clear(`gold`);
 // To get all the stuff on screen
 enemyLevelUp();
 enemyPicker();
-let enemyTesterInterval = setInterval(enemyTester, 33);
 bossPicker();
 updateButtonValues();
 updateIdleGold();
-let displayBossInterval = setInterval(displayBoss, 33);
 // I made them variables so i could cancel them, and also looks better without the setInterval thing on the whole function
 let updategoldCountInterval = setInterval(updategoldCount, 33);
 let automatedDamageInterval = setInterval(automatedDamage, 33);
+let enemyTesterInterval = setInterval(enemyTester, 33);
+let displayBossInterval = setInterval(displayBoss, 33);
 let calcDPSInterval = setInterval(calcDPS, 33);
 let timeInSecInterval = setInterval(timeInSec, 2200);
 
@@ -644,6 +739,41 @@ inputFarmName.onblur = e => {
   localStorage.setItem(`farmName`, inputFarmName.value);
   labelCharactersRemain.style.opacity = 0;
 };
+
+btnTurret.addEventListener(`click`, function (e) {
+  //Do you have enough cash?
+  if (gold >= properties.turret[0]) {
+    //"Spend" cash (cash-price)
+    gold = gold - properties.turret[0];
+
+    //Add the property to the object
+    properties.turret[1] = properties.turret[1] + 1;
+
+    //Update the idle gold production,the price of the property, and text
+    updateIdleGold();
+    updatePrice(`turret`);
+    updateHistoryText(`Got turret`);
+    updateButtonValues();
+  }
+});
+
+btnMinions.addEventListener(`click`, function (e) {
+  //Do you have enough cash?
+  if (gold >= properties.minions[0]) {
+    //"Spend" cash (cash-price)
+    gold = gold - properties.minions[0];
+
+    //Add the property to the object
+    properties.minions[1] = properties.minions[1] + 1;
+
+    //Update the idle gold production,the price of the property, and text
+    updateIdleGold();
+    updatePrice(`minions`);
+    updateHistoryText(`Got minions`);
+    updateButtonValues();
+  }
+});
+
 //The fun part!
 btnChests.addEventListener(`click`, function (e) {
   //If you can buy it
@@ -661,22 +791,30 @@ btnChests.addEventListener(`click`, function (e) {
     //Local storage scary
     localStorage.setItem(`inventory`, JSON.stringify(inventory));
     localStorage.setItem(`counts`, JSON.stringify(counts));
-
+    updateButtonValues();
     //ITEM FUNCTIONS!!!(below)
     itemFunctions(randomItem);
   }
 });
-
+//Boss fight button
 btnBoss.addEventListener(`click`, function (e) {
+  //Make it visible
   btnBoss.style.visibility = `hidden`;
+  //Put the right boss name on it
   updateButtonValues();
+  //Call bossFight interval every 33 milisec
   bossFightInterval = setInterval(bossFight, 33);
+  labelBossToolTip.style.opacity = 0;
+  progressBar.style.visibility = `visible`;
 });
 
 //----------------------------------------------------------------------------------
 //ITEMS
 //I made it a variable so i can cancel it (maybe a debuff??)
-const triTipInterval = setInterval(itemFunctions, 500, `Tri-tip Dagger`);
+let triTipInterval;
+setTimeout(() => {
+  triTipInterval = setInterval(itemFunctions, 500, `Tri-tip Dagger`);
+}, 3000);
 
 function itemFunctions(item) {
   //If you got...
@@ -729,6 +867,7 @@ function itemFunctions(item) {
   }
 }
 
+//Reset localStorage if your name is "resetLS"
 document.querySelector(`.reset`).addEventListener(`click`, function () {
   clearInterval(enemyTesterInterval);
   clearInterval(displayBossInterval);
