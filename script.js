@@ -256,7 +256,7 @@ function bossPicker(bossKilled = false) {
       for (const boss of bosses) {
         boss[1] = false;
       }
-      bossBuff = bossBuff + 25;
+      bossBuff = bossBuff + 5;
       timeBuff += 30;
       time = time + timeBuff;
       localStorage.setItem(`time`, time);
@@ -270,7 +270,9 @@ function bossPicker(bossKilled = false) {
         ((bossesNumero + 1) * 100) *
         (bossBuff === 0 ? 1 : bossBuff);
       maxBossHealth = bossHealth;
-      labelBossToolTip.textContent = `Boss health: ${bossHealth}`;
+      labelBossToolTip.textContent = `Boss health: ${bossHealth}\r\n Time to beat: ${
+        30 + timeBuff
+      }s`;
       return nextBoss;
     }
     if (bosses[bossesNumero][1] === false) {
@@ -293,7 +295,7 @@ function enemyLevelUp() {
   if (enemyLevel >= 15) {
     //Requirement for next enemy level is:
     nextLevelReq = enemyLevel * 3 + 20;
-    enemyGoldOnKill = enemyLevel * 3.5;
+    enemyGoldOnKill = enemyLevel * 4.5;
   } else {
     //Requirement for next enemy level is:
     nextLevelReq = enemyLevel * 2 + 10;
