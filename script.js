@@ -240,7 +240,7 @@ function enemyPicker() {
   const randomEnemy = enemies[randomNumber];
   btngold.value = `${randomEnemy} \n`;
 }
-console.log(30 + Number(30));
+
 function bossPicker(bossKilled = false) {
   for (const boss of bosses) {
     if (bosses[bosses.indexOf(boss)][1] === false) {
@@ -256,19 +256,20 @@ function bossPicker(bossKilled = false) {
       for (const boss of bosses) {
         boss[1] = false;
       }
-      bossBuff = bossBuff + 20;
+      bossBuff = bossBuff + 11;
       timeBuff += 30;
-      time = time + timeBuff;
+      time = 30 + timeBuff;
       localStorage.setItem(`time`, time);
       localStorage.setItem(`timeBuff`, timeBuff);
       localStorage.setItem(`bossBuff`, bossBuff);
       localStorage.setItem(`bosses`, JSON.stringify(bosses));
       nextBoss = bosses[0][0];
+      bossesNumero = bosses.indexOf(boss);
       bossHealth =
         enemyLevel *
         2 *
         ((bossesNumero + 1) * 100) *
-        (bossBuff === 0 ? 1 : bossBuff);
+        (bossBuff === 0 ? 1 : bossBuff + 1);
       maxBossHealth = bossHealth;
       labelBossToolTip.textContent = `Boss health: ${bossHealth}\r\n Time to beat: ${
         30 + Number(timeBuff)
@@ -295,7 +296,7 @@ function enemyLevelUp() {
   if (enemyLevel >= 15) {
     //Requirement for next enemy level is:
     nextLevelReq = enemyLevel * 3 + 20;
-    enemyGoldOnKill = enemyLevel * 4.5;
+    enemyGoldOnKill = enemyLevel * 6.5;
   } else {
     //Requirement for next enemy level is:
     nextLevelReq = enemyLevel * 2 + 10;
@@ -362,7 +363,7 @@ function bossFight() {
         updateButtonValues();
         updateIdleGold();
         labelTimer.textContent = ``;
-        time = 30 + timeBuff;
+
         i = 1;
         labelHistoryText.style.color = `red`;
         updateHistoryText(`Failed to defeat ${nextBoss}`);
@@ -373,7 +374,6 @@ function bossFight() {
         clearInterval(timer);
         labelTimer.textContent = ``;
         progressBar.style.visibility = `hidden`;
-        time = 30 + timeBuff;
 
         i = 1;
       }
@@ -403,6 +403,7 @@ function bossFight() {
     updateIdleGold();
     labelBossToolTip.style.opacity = 1;
     progressBar.style.visibility = `hidden`;
+    time = 30 + timeBuff;
     i = 1;
   } else {
     btngold.value = `${nextBoss}\nHealth:${bossHealth.toFixed(1)}`;
