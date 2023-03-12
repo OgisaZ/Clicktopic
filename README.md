@@ -12,7 +12,7 @@ Buying properties will make you `Idle Gold`. Every 33 milliseconds you will earn
 
 ### Future/Roadmap
 
-[] Adding more items and their functionalities
-I plan on adding way more items in the future that all do vastly different things, and aren't boring as the current 5 i have now
-[] UI changes
-It's impossible to currently know what the items do, how much damage properties deal, and some other basic stats. I plan on adding a way for you to see all of that.
+- [ ] Adding more items and their functionalities
+      I plan on adding way more items in the future that all do vastly different things, and aren't boring as the current 5 i have now<br />
+- [ ] UI changes
+      It's impossible to currently know what the items do, how much damage properties deal, and some other basic stats. I plan on adding a way for you to see all of that.<br />
