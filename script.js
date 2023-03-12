@@ -193,7 +193,7 @@ modalText.textContent = ``;
 //----------------------------------------------------------------------------
 
 //FUNCTIONS
-function timeInSec() {
+function timeAway() {
   if (j === 0) {
     awayTimeSec = Math.trunc((now - localStorage.getItem(`then`)) / 1000);
 
@@ -252,7 +252,6 @@ function bossPicker(bossKilled = false) {
       bosses[bossesNumero][1] = true;
       bossKilled = false;
       localStorage.setItem(`bosses`, JSON.stringify(bosses));
-      time = 30 + timeBuff;
     }
     if (bosses[bosses.length - 1][1]) {
       for (const boss of bosses) {
@@ -260,9 +259,9 @@ function bossPicker(bossKilled = false) {
       }
       priceNerf = 0.05;
       localStorage.setItem(`priceNerf`, priceNerf);
-      bossBuff = bossBuff + 5;
+      bossBuff = bossBuff + 3;
       timeBuff += 30;
-      time = 30 + timeBuff;
+      time = 30 + Number(timeBuff);
       localStorage.setItem(`time`, time);
       localStorage.setItem(`timeBuff`, timeBuff);
       localStorage.setItem(`bossBuff`, bossBuff);
@@ -349,11 +348,13 @@ function bossFight() {
   localStorage.setItem(`enemyKillCount`, enemyKillCount);
   bossFightCurrent = true;
   if (i === 1) {
-    time = 30 + timeBuff;
+    time = 30 + Number(timeBuff);
+    console.log(`Ovo je tu prvi put ${time}`);
     const timer = setInterval(function () {
       let min = String(Math.trunc(time / 60)).padStart(2, 0);
-      let sec = String(time % 60).padStart(2, 0);
 
+      let sec = String(time % 60).padStart(2, 0);
+      console.log(`Unutar timer interval ` + time);
       labelTimer.textContent = `${min}:${sec}`;
 
       time--;
@@ -408,7 +409,7 @@ function bossFight() {
     updateIdleGold();
     labelBossToolTip.style.opacity = 1;
     progressBar.style.visibility = `hidden`;
-    time = 30 + timeBuff;
+    console.log(`Ovo je kad si ubio bossa ${time}`);
     i = 1;
   } else {
     btngold.value = `${nextBoss}\nHealth:${bossHealth.toFixed(1)}`;
@@ -593,7 +594,7 @@ let automatedDamageInterval = setInterval(automatedDamage, 33);
 let enemyTesterInterval = setInterval(enemyTester, 33);
 let displayBossInterval = setInterval(displayBoss, 33);
 let calcDPSInterval = setInterval(calcDPS, 33);
-let timeInSecInterval = setInterval(timeInSec, 2200);
+let timeAwayInterval = setInterval(timeAway, 2200);
 
 function updatePrice(property) {
   //Locate the current price of property
@@ -630,9 +631,14 @@ btngold.addEventListener(`click`, function () {
   //If you have a crowbar
   if (inventory.includes(`Crowbar`)) {
     //If enemy health is above 90% of their max health
-    if (bossFightCurrent ? bossHealth : enemyHealth >= enemyMaxHealth * 0.9) {
+    if (
+      bossFightCurrent
+        ? bossHealth >= maxBossHealth * 0.9
+        : enemyHealth >= enemyMaxHealth * 0.9
+    ) {
       //Then do the crowbar buff
       damageOnClick = damageOnClick * crowbarBuff;
+      console.log(`CROWBAAAAR`);
     } else {
       //If not, then do normal damage
       damageOnClick = properties.clickMultiplier[1] + enemyLevel - 1;
