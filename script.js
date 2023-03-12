@@ -142,6 +142,7 @@ let j = 0;
 let awayTimeSec;
 //How much money roll of pennies item gets you on kill
 let rollOfPenniesBuff = Number(localStorage.getItem(`rollOfPenniesBuff`)) || 0;
+let priceNerf = Number(localStorage.getItem(`priceNerf`)) || 0.2;
 let changeBackCrit;
 let changeBackHistory;
 //How much damage you deal according to how many crowbars you have
@@ -251,12 +252,15 @@ function bossPicker(bossKilled = false) {
       bosses[bossesNumero][1] = true;
       bossKilled = false;
       localStorage.setItem(`bosses`, JSON.stringify(bosses));
+      time = 30 + timeBuff;
     }
     if (bosses[bosses.length - 1][1]) {
       for (const boss of bosses) {
         boss[1] = false;
       }
-      bossBuff = bossBuff + 11;
+      priceNerf = 0.05;
+      localStorage.setItem(`priceNerf`, priceNerf);
+      bossBuff = bossBuff + 5;
       timeBuff += 30;
       time = 30 + timeBuff;
       localStorage.setItem(`time`, time);
@@ -345,6 +349,7 @@ function bossFight() {
   localStorage.setItem(`enemyKillCount`, enemyKillCount);
   bossFightCurrent = true;
   if (i === 1) {
+    time = 30 + timeBuff;
     const timer = setInterval(function () {
       let min = String(Math.trunc(time / 60)).padStart(2, 0);
       let sec = String(time % 60).padStart(2, 0);
@@ -596,7 +601,7 @@ function updatePrice(property) {
   const currentPrice = properties[property][0];
 
   //The new price is the current(previous) price times 0.2
-  let price = Number(currentPrice + currentPrice * 0.2);
+  let price = Number(currentPrice + currentPrice * priceNerf);
 
   //Add it to the object, and set it to 1 decimal place
   properties[property][0] = Number(price.toFixed(1));
