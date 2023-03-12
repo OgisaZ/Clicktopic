@@ -271,7 +271,7 @@ function bossPicker(bossKilled = false) {
         (bossBuff === 0 ? 1 : bossBuff);
       maxBossHealth = bossHealth;
       labelBossToolTip.textContent = `Boss health: ${bossHealth}\r\n Time to beat: ${
-        30 + timeBuff
+        30 + Number(timeBuff)
       }s`;
       return nextBoss;
     }
@@ -285,7 +285,7 @@ function bossPicker(bossKilled = false) {
       maxBossHealth = bossHealth;
       localStorage.setItem(`bosses`, JSON.stringify(bosses));
       labelBossToolTip.textContent = `Boss Health: ${bossHealth}\r\n Time to beat: ${
-        30 + timeBuff
+        30 + Number(timeBuff)
       }s`;
       return nextBoss;
     }
