@@ -240,7 +240,7 @@ function enemyPicker() {
   const randomEnemy = enemies[randomNumber];
   btngold.value = `${randomEnemy} \n`;
 }
-
+console.log(30 + Number(30));
 function bossPicker(bossKilled = false) {
   for (const boss of bosses) {
     if (bosses[bosses.indexOf(boss)][1] === false) {
@@ -256,7 +256,7 @@ function bossPicker(bossKilled = false) {
       for (const boss of bosses) {
         boss[1] = false;
       }
-      bossBuff = bossBuff + 5;
+      bossBuff = bossBuff + 20;
       timeBuff += 30;
       time = time + timeBuff;
       localStorage.setItem(`time`, time);
