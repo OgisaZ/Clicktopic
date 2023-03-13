@@ -61,7 +61,8 @@ br {
   box-shadow: 0 9px #999;
   transition: 0.3s;
   left: 50%;
-  opacity: 0.7;
+  opacity: 0.8;
+  user-select: none;
 }
 .gold-button:hover {
   background-color: #bebebe;
@@ -75,6 +76,7 @@ br {
   transform: translateY(5px);
   transition: 0.2s;
 }
+
 .grid-container {
   display: grid;
   padding: 10px;
@@ -135,6 +137,16 @@ br {
   font-size: 150%;
   user-select: none;
 }
+.item-history-text {
+  display: inline-block;
+  height: 100px;
+  width: 90%;
+  padding: 25px;
+  opacity: 0;
+  transition: opacity 1s;
+  font-size: 150%;
+  user-select: none;
+}
 .chests {
   padding: 3%;
   width: 70%;
@@ -154,10 +166,27 @@ br {
 .shop-text {
   font-size: 2rem;
 }
+.monster-tooth {
+  display: block;
+  position: absolute;
+  margin-bottom: 70%;
+  border-radius: 200%;
+  height: 40px;
+  width: 40px;
+  box-shadow: 0 3px #999;
+  opacity: 0.6;
+  background-color: orange;
+}
+.monster-tooth:active {
+  background-color: orangered;
+  box-shadow: 0 3px #666;
 
+  transform: translateY(3px);
+  transition: 0.2s;
+}
 #items-list {
   display: inline;
-  font-size: 25px;
+  font-size: 130%;
   border: 0px solid black;
   width: 90%;
   height: 10%;
