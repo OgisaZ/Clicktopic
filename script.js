@@ -170,7 +170,11 @@ let chnageBackItemHistory;
 let crowbarBuff = counts[4] * 0.5 + 1;
 //If you have more than 10 lens makers, just deal more damage on click. I feel like getting lenses after you have 10 is useless and not fun, so they might as well do something minor
 let lensMakerBuff = counts[1] >= 11 ? counts[1] - 10 : 0;
-let monsterToothBuff = counts[6] * enemyLevel + 7;
+let monsterToothBuff =
+  counts[6] *
+  (enemyLevel + 7) *
+  rollOfPenniesBuff *
+  (properties.clickMultiplier[1] / 2);
 //Arrow function to give you a random item
 const randomItemNumber = () => Math.trunc(Math.random() * items.length);
 //Get the object from localStorage if exists (|| if it doesn't)
@@ -944,7 +948,7 @@ btnMonsterTooth.addEventListener(`click`, function () {
   btnMonsterTooth.style.left = `${x}vw`;
   btnMonsterTooth.style.top = `${y}vh`;
   gold = gold + monsterToothBuff;
-  enemyHealth = enemyHealth.toFixed(1) - monsterToothBuff.toFixed(1);
+  enemyHealth = enemyHealth.toFixed(1) - monsterToothBuff.toFixed(1) / 5;
 });
 //----------------------------------------------------------------------------------
 //ITEMS
@@ -1002,14 +1006,18 @@ function itemFunctions(item) {
       crowbarBuff = counts[4] * 0.5 + 1;
       break;
     case `Delicate Watch`:
-      timeBuff = Number(timeBuff) + 2;
+      timeBuff = Number(timeBuff) + 1;
       labelBossToolTip.textContent = `Boss health: ${bossHealth}\r\n Time to beat: ${
         30 + Number(timeBuff)
       }s`;
       localStorage.setItem(`timeBuff`, timeBuff);
       break;
     case `Monster Tooth`:
-      monsterToothBuff = counts[6] * enemyLevel + 7;
+      monsterToothBuff =
+        counts[6] *
+        (enemyLevel + 7) *
+        rollOfPenniesBuff *
+        (properties.clickMultiplier[1] / 2);
       break;
     default:
       break;
