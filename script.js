@@ -186,8 +186,8 @@ const properties = JSON.parse(localStorage.getItem(`properties`)) || {
 let monsterToothBuff =
   counts[6] *
   (enemyLevel + 7) *
-  rollOfPenniesBuff *
-  (properties.clickMultiplier[1] / 2);
+  (rollOfPenniesBuff + 1) *
+  (properties.clickMultiplier[1] / 2 + 1);
 //Get idle gold from localStorage. Will explain how it is calculated it its function
 let idleGold = Number(localStorage?.getItem(`idleGold`)) || 0;
 //How much damage you deal on click. Mostly used with crowbar calculations
@@ -819,12 +819,18 @@ btnClickMultiplier.addEventListener(`click`, function () {
   if (gold >= properties.clickMultiplier[0]) {
     //Cost
     gold = gold - properties.clickMultiplier[0];
+
     //Deal more damage every click, update idle gold (may change stuff),the price, and text
     properties.clickMultiplier[1] = properties.clickMultiplier[1] + 0.2;
     updateIdleGold();
     updatePrice(`clickMultiplier`);
     updateHistoryText(`Got Click Multiplier`);
     updateButtonValues();
+    monsterToothBuff =
+      counts[6] *
+      (enemyLevel + 7) *
+      (rollOfPenniesBuff + 1) *
+      (properties.clickMultiplier[1] / 2 + 1);
   }
 });
 
@@ -949,7 +955,7 @@ btnMonsterTooth.addEventListener(`click`, function () {
   btnMonsterTooth.style.left = `${x}vw`;
   btnMonsterTooth.style.top = `${y}vh`;
   gold = gold + monsterToothBuff;
-  enemyHealth = enemyHealth.toFixed(1) - monsterToothBuff.toFixed(1) / 5;
+  enemyHealth = enemyHealth.toFixed(1) - monsterToothBuff.toFixed(1) * 0.01;
 });
 //----------------------------------------------------------------------------------
 //ITEMS
@@ -1017,8 +1023,8 @@ function itemFunctions(item) {
       monsterToothBuff =
         counts[6] *
         (enemyLevel + 7) *
-        rollOfPenniesBuff *
-        (properties.clickMultiplier[1] / 2);
+        (rollOfPenniesBuff + 1) *
+        (properties.clickMultiplier[1] / 2 + 1);
       break;
     default:
       break;
