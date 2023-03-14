@@ -170,11 +170,7 @@ let chnageBackItemHistory;
 let crowbarBuff = counts[4] * 0.5 + 1;
 //If you have more than 10 lens makers, just deal more damage on click. I feel like getting lenses after you have 10 is useless and not fun, so they might as well do something minor
 let lensMakerBuff = counts[1] >= 11 ? counts[1] - 10 : 0;
-let monsterToothBuff =
-  counts[6] *
-  (enemyLevel + 7) *
-  rollOfPenniesBuff *
-  (properties.clickMultiplier[1] / 2);
+
 //Arrow function to give you a random item
 const randomItemNumber = () => Math.trunc(Math.random() * items.length);
 //Get the object from localStorage if exists (|| if it doesn't)
@@ -187,6 +183,11 @@ const properties = JSON.parse(localStorage.getItem(`properties`)) || {
   turret: [400, 0, 0.05, 0],
   minions: [600, 0, 0.1],
 };
+let monsterToothBuff =
+  counts[6] *
+  (enemyLevel + 7) *
+  rollOfPenniesBuff *
+  (properties.clickMultiplier[1] / 2);
 //Get idle gold from localStorage. Will explain how it is calculated it its function
 let idleGold = Number(localStorage?.getItem(`idleGold`)) || 0;
 //How much damage you deal on click. Mostly used with crowbar calculations
