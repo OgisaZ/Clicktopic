@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>🧙SHADOW WIZARD MONEY GANG</title>
+    <title>Clicktopic</title>
     <link rel="stylesheet" href="index.css" />
   </head>
   <body class="boldena-font">
@@ -40,11 +40,16 @@
         <span><span id="turret-text">Turret</span>
         <input type="button" value="Buy Turret" class="buying boldena-font" id="turret">
         </span><br>
+        <span><span id="click-machine-text">Click Machine</span>
+        <input type="button" value="Buy Click Machine" class="buying boldena-font" id="click-machine">
+        </span><br>
         <span>
           <span id="minions-text">Minions</span>
       <input type="button" value="Buy Minions" class="buying boldena-font" id="minions">
        </span>
+       
         </span>
+        
       </div>
       <!-- CENTER -->
 
@@ -81,11 +86,17 @@
         <input type="button" value="reset" class="boldena-font reset"><br>
         <span><progress id="progress" value="32" max="100"></progress></span><br>
         <span>
+          <span class="info-modal">
+          <span class="info-modal-content"></span>
+          </span>
+        </span>
+        <span>
           <!-- The gold button -->
           <span class="modal">
             <span class="modal-content"></span>
             
           </span>
+          
           
           <input
             type="button"
@@ -100,6 +111,7 @@
         <span class="timer"></span><br>
 
         <span class="history-text">hello!</span>
+        
       </div>
       <!-- RIGHT -->
       <div>
@@ -110,8 +122,17 @@
         /><br>
         <span id="items-list"></span>
         <br><span class="item-history-text"></span>
+        
+        <p class="info-buttons">
+          <button class="info-properties boldena-font">Properties</button>
+          <button class="info-stats boldena-font">Stats</button>
+          <button class="info-item boldena-font">Item Functions</button>
+           <!-- <button class="info-achievements boldena-font">Achievements</button> -->
+         </p>
       </div>
     </div>
+    <script src="declarations&stats.js"></script>
     <script src="script.js"></script>
+    
   </body>
 </html>

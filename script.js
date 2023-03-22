@@ -1,237 +1,34 @@
 'use strict';
 
-//Labels
-const labelgoldNumber = document.querySelector(`.gold`);
-const labelHistoryText = document.querySelector(`.history-text`);
-const labelItemHistoryText = document.querySelector(`.item-history-text`);
-const labelItemList = document.getElementById(`items-list`);
-const labelEnemyLevel = document.getElementById(`enemy-level`);
-const labelToolTip = document.querySelector(`.tool-tip-level`);
-const labelBossToolTip = document.querySelector(`.tool-tip-boss`);
-const labelWelcome = document.querySelector(`.welcome-text`);
-const labelCharactersRemain = document.querySelector(`.char-remaining`);
-const labelIdleDPS = document.querySelector(`.dps`);
-//Property labels
-const labelSurvivor = document.getElementById(`survivor-text`);
-const labelClickMultiplier = document.getElementById(`click-multiplier-text`);
-const labelDrone = document.getElementById(`drone-text`);
-const labelTurret = document.getElementById(`turret-text`);
-const labelMinions = document.getElementById(`minions-text`);
-
-//Boss timer label
-const labelTimer = document.querySelector(`.timer`);
-const progressBar = document.getElementById(`progress`);
-//Inputs
-const inputFarmName = document.getElementById(`farm-name`);
-//Get the farm name from localStorage
-inputFarmName.value = localStorage.getItem(`farmName`);
-//Buttons
-const btngold = document.querySelector(`.gold-button`);
-const btnFarmName = document.getElementById(`farm-name-button`);
-const btnBoss = document.querySelector(`.boss-button`);
-//Property Buttons
-const btnsurvivor = document.getElementById(`survivor`);
-const btnClickMultiplier = document.getElementById(`clickMultiplier`);
-const btnDrone = document.getElementById(`drone`);
-const btnTurret = document.getElementById(`turret`);
-const btnMinions = document.getElementById(`minions`);
-const btnChests = document.querySelector(`.chests`);
-const btnMonsterTooth = document.querySelector(`.monster-tooth`);
-//Get cash from localStorage if exists (|| if it doesn't)
-const modal = document.querySelector(`.modal`);
-const modalText = document.querySelector(`.modal-content`);
-let gold = Number(localStorage?.getItem(`gold`)) || 0;
-//All the items you have (from chests)
-const inventory = JSON.parse(localStorage.getItem(`inventory`)) || [];
-const inventoryUnique = new Set(inventory);
-//Array of all the items
-const items = [
-  `Soldier's Syringe`,
-  `Lens Maker`,
-  `Tri-tip Dagger`,
-  `Roll of Pennies`,
-  `Crowbar`,
-  `Delicate Watch`,
-  `Monster Tooth`,
-];
-//Number of items you have. Arragement is important.
-const counts =
-  JSON.parse(localStorage.getItem(`counts`)) || new Array(items.length).fill(0);
-//Array of enemies. The arrangement of enemies are in the array are important
-const enemies = [
-  `Francua`,
-  `Lesser Wisp`,
-  `Kliker`,
-  `Jellyfish`,
-  `Vermin`,
-  `Alpha Construct`,
-  `Beetle`,
-  `Kobasica`,
-  `Baboon`,
-  `Blind Pest`,
-  `Gaysus`,
-  `Footer`,
-  `Lemurian`,
-  `Imp`,
-  `STBK`,
-  `Vulture`,
-  `Siptar`,
-  `Krankenstein`,
-  `Stone Golem`,
-  `Ormar & Orman`,
-  `Mini Mushrum`,
-  `Randall`,
-  `Brass Contraption`,
-  `Ford F-150`,
-  `Beetle Guard`,
-  `Bison`,
-  `Mica Copper`,
-  `H20`,
-  `Microwave`,
-  `Greater Wisp`,
-  `Gup`,
-  `Clay Templar`,
-  `PVC Stolarija`,
-  `Elder Lemurian`,
-];
-//Seeing what the next boss is
-let nextBoss;
-//Current boss health
-let bossHealth;
-//It's true if you're currently fighting the boss
-let bossFightCurrent = false;
-//It's defined here so i can cancel it inside a function
-let bossFightInterval;
-//Max current boss health (used for crowbar and progress bar)
-let maxBossHealth;
-//After defeating final boss, things change like prices,boss health, how much time you have (looping)
-let bossBuff = localStorage.getItem(`bossBuff`) || 0;
-let timeBuff = localStorage.getItem(`timeBuff`) || 0;
-let priceNerf = Number(localStorage.getItem(`priceNerf`)) || 0.2;
-let time = localStorage.getItem(`time`) || 30;
-//Used for selecting nextBoss (badly named i know)
-let bossesNumero = 0;
-//Used for seeing if you defeated the current boss
-let bossKilled = false;
-//Used for timer (bossFight function)
-let i = 1;
-//Boss names, the further down the array the more health they have
-let bosses = JSON.parse(localStorage.getItem(`bosses`)) || [
-  [`Cedonj`, false],
-  [`Pablo`, false],
-  [`lane`, false],
-  [`Orbito`, false],
-  [`Sebastian`, false],
-  [`Gojak`, false],
-  [`Dizna`, false],
-  [`M3S-B0R`, false],
-  [`Cabron`, false],
-  [`Coaxial fi-bro`, false],
-  [`UTP RJ-45`, false],
-  [`Stiropor`, false],
-  [`Kukri`, false],
-  [`ByBaj`, false],
-  [`Kharton`, false],
-  [`Ivca`, false],
-  [`Jovan Fajnisevic`, false],
-];
-//Current enemy health
-let enemyHealth;
-//For crowbar item
-let enemyMaxHealth;
-//Used to see when you will level up. Hold your mouse over the level number to see how many more you need to kill to level up
-let enemyKillCount = Number(localStorage.getItem(`enemyKillCount`)) || 0;
-// let globalEnemyKillCount =
-// Number(localStorage.getItem(`globalEnemyKillCount`)) || 0;
-let enemyLevel = Number(localStorage.getItem(`enemyLevel`)) || 1;
-//How many you need to kill for them to level up
-let nextLevelReq;
-//Just used to display on screen
-let nextLevelReqText;
-//This plus some other stuff is used to calculate gold on kill. I guess i should've named it different
-let enemyGoldOnKill = enemyLevel * 1.5;
-//Used for enemy health calculation
-let randomNumber;
-//Used for calculating your current Idle DPS
-let dpsCalc = [];
-//Your damage per second (used for calculations and displaying dps onscreen)
-let dps;
-//Used for calculating afk gold (timeAway function)
-let j = 0;
-//How long you weren't playing in seconds
-let awayTimeSec;
-//How much money roll of pennies item gets you on kill
-let rollOfPenniesBuff = Number(localStorage.getItem(`rollOfPenniesBuff`)) || 0;
-//Used for displaying text onscreen
-let changeBackCrit;
-let changeBackHistory;
-let chnageBackItemHistory;
-//How much damage you deal according to how many crowbars you have
-let crowbarBuff = counts[4] * 0.5 + 1;
-//If you have more than 10 lens makers, just deal more damage on click. I feel like getting lenses after you have 10 is useless and not fun, so they might as well do something minor
-let lensMakerBuff = counts[1] >= 11 ? counts[1] - 10 : 0;
-
-//Arrow function to give you a random item
-const randomItemNumber = () => Math.trunc(Math.random() * items.length);
-//Get the object from localStorage if exists (|| if it doesn't)
-//property:[cost,how many you have, how much this property makes]
-const properties = JSON.parse(localStorage.getItem(`properties`)) || {
-  survivor: [20, 0, 0.003, 0],
-  clickMultiplier: [40, 1, 0],
-  chests: [100, 0, 0],
-  drone: [250, 0, 0.02, 0],
-  turret: [400, 0, 0.05, 0],
-  minions: [600, 0, 0.1],
-};
-let monsterToothBuff =
-  counts[6] *
-  (enemyLevel + 7) *
-  (rollOfPenniesBuff + 1) *
-  (properties.clickMultiplier[1] / 2 + 1);
-//Get idle gold from localStorage. Will explain how it is calculated it its function
-let idleGold = Number(localStorage?.getItem(`idleGold`)) || 0;
-//How much damage you deal on click. Mostly used with crowbar calculations
-let damageOnClick =
-  properties.clickMultiplier[1] + enemyLevel - 1 + lensMakerBuff;
-//Seeing the current time
-const now = new Date();
-//Welcome text array
-const welcomeText = [
-  `Hello`,
-  `Happy ${new Intl.DateTimeFormat(navigator.language, {
-    weekday: `long`,
-  }).format(now)}`,
-  `G'day`,
-  `Welcome back`,
-  `What's up`,
-  `Thanks`,
-  `Ready, Set`,
-];
-//Display on screen
-//Current gold with thousand seperator
-labelgoldNumber.textContent = addCurrency(gold);
-labelEnemyLevel.textContent = enemyLevel;
-localStorage.getItem(`farmName`)
-  ? (labelWelcome.textContent = `${
-      welcomeText[Math.trunc(Math.random() * welcomeText.length)]
-    }, ${localStorage.getItem(`farmName`)}`)
-  : (labelWelcome.textContent = ``);
-labelItemList.innerHTML = ``;
-for (const mov of items) {
-  const positionInArray = items.indexOf(mov);
-  if (counts[positionInArray] === 0) continue;
-  labelItemList.innerHTML += `${counts[positionInArray]}x ${mov}<br>`;
-}
-modalText.textContent = ``;
-btnMonsterTooth.style.visibility = `hidden`;
-//OVDEEEE
-let x = Math.floor(Math.random() * 10) + 45;
-let y = Math.floor(Math.random() * 10) + 47;
-btnMonsterTooth.style.left = `50vw`;
-btnMonsterTooth.style.top = `50vh`;
 //----------------------------------------------------------------------------
 
 //FUNCTIONS
+function oldSaveUpdate() {
+  if (counts.length !== items.length) {
+    for (let i = 0; i <= items.length - counts.length; i++) {
+      welcomeText.textContent = `UPDATING...`;
+      counts.push(0);
+      localStorage.setItem(`counts`, JSON.stringify(counts));
+      location.reload();
+    }
+  }
+  if (Object.keys(properties).length !== Object.keys(propertyOriginal).length) {
+    for (let i = 0; i <= Object.keys(propertyOriginal).length; i++) {
+      if (Object.keys(propertyOriginal)[i] === Object.keys(properties)[i]) {
+        console.log(`Everything is okay!`);
+      } else {
+        welcomeText.textContent = `UPDATING...`;
+        properties[Object.keys(propertyOriginal)[i]] =
+          Object.values(propertyOriginal)[i];
+        localStorage.setItem(`properties`, JSON.stringify(properties));
+      }
+    }
+    location.reload();
+  }
+}
+
+oldSaveUpdate();
+
 function timeAway() {
   if (j === 0) {
     awayTimeSec = Math.trunc((now - localStorage.getItem(`then`)) / 1000);
@@ -264,6 +61,7 @@ function timeAway() {
       )}`;
       //Give you the gold that you were away
       gold = gold + awayTimeSec * dps;
+      goldCollectCount += awayTimeSec * dps;
     }
   }
   //Every 2.2 seconds update the current time as then and put it in local storage
@@ -302,8 +100,10 @@ function bossPicker(bossKilled = false) {
     if (bossKilled) {
       //Set the boss as killed (true)
       bosses[bossesNumero][1] = true;
+      bossesKilledCount++;
       //Set bossKilled to false so that you can enter here again after defeating next boss, and put the new bosses array to localStorage
       bossKilled = false;
+      localStorage.setItem(`bossesKilledCount`, bossesKilledCount);
       localStorage.setItem(`bosses`, JSON.stringify(bosses));
     }
     //If you have killed the final boss (looping)
@@ -316,9 +116,9 @@ function bossPicker(bossKilled = false) {
       priceNerf = 0.05;
       localStorage.setItem(`priceNerf`, priceNerf);
       //Buff the boss health to the normal * bossBuff
-      bossBuff = bossBuff + 3;
+      bossBuff = Number(bossBuff) + 30;
       //Get more time after looping and put everything to localStorage
-      timeBuff += 30;
+      timeBuff += 10;
       time = 30 + Number(timeBuff);
       localStorage.setItem(`time`, time);
       localStorage.setItem(`timeBuff`, timeBuff);
@@ -330,7 +130,7 @@ function bossPicker(bossKilled = false) {
       //Calculation of boss health and maximum boss health with bossBuff
       bossHealth =
         enemyLevel *
-        2 *
+        3 *
         ((bossesNumero + 1) * 100) *
         (bossBuff === 0 ? 1 : bossBuff + 1);
       maxBossHealth = bossHealth;
@@ -348,7 +148,7 @@ function bossPicker(bossKilled = false) {
       //Calculate the health and maximum health of the boss
       bossHealth =
         enemyLevel *
-        2 *
+        3 *
         ((bossesNumero + 1) * 100) *
         (bossBuff === 0 ? 1 : bossBuff);
       maxBossHealth = bossHealth;
@@ -436,18 +236,28 @@ function bossFight() {
         //Stop executing the timer and boss fight interval. Update everything else and tell the user that they failed
         clearInterval(timer);
         clearInterval(bossFightInterval);
+
         bossFightCurrent = false;
         enemyTesterInterval = setInterval(enemyTester, 33);
         //You get the nextBoss name here
         bossPicker();
         enemyPicker();
         updateButtonValues();
-        updateIdleGold();
         labelTimer.textContent = ``;
 
         i = 1;
         labelHistoryText.style.color = `red`;
-        updateHistoryText(`Failed to defeat ${nextBoss}`);
+        updateHistoryText(
+          `Failed to defeat ${nextBoss}. Lost ${counts[8]}x Glass Pane`
+        );
+        counts[8] = 0;
+        localStorage.setItem(`counts`, JSON.stringify(counts));
+        for (const mov of inventory) {
+          const where = inventory.indexOf(mov);
+          mov === `Glass Pane` ? inventory.splice(where, 1) : ``;
+        }
+        localStorage.setItem(`inventory`, JSON.stringify(inventory));
+        numberOfItems();
         progressBar.style.visibility = `hidden`;
         setTimeout(() => (labelHistoryText.style.color = `black`), 1500);
       }
@@ -466,6 +276,8 @@ function bossFight() {
     bossFightCurrent = false;
     //The gold you get on kill is calculated:
     gold = gold + (maxBossHealth / 2) * (enemyGoldOnKill + rollOfPenniesBuff);
+    goldCollectCount +=
+      (maxBossHealth / 2) * (enemyGoldOnKill + rollOfPenniesBuff);
     updateHistoryText(
       `Got` +
         addCurrency(
@@ -556,6 +368,8 @@ function enemyTester() {
   if (enemyHealth <= 0) {
     //The gold you get on kill is calculated:
     gold = gold + (randomNumber + 1) * (enemyGoldOnKill + rollOfPenniesBuff);
+    goldCollectCount +=
+      (randomNumber + 1) * (enemyGoldOnKill + rollOfPenniesBuff);
     updateHistoryText(
       `Got ` +
         addCurrency(
@@ -565,12 +379,12 @@ function enemyTester() {
         )
     );
     enemyKillCount++;
-    // globalEnemyKillCount++;
-    // localStorage.setItem(`globalEnemyKillCount`, globalEnemyKillCount);
+    globalEnemyKillCount++;
+    localStorage.setItem(`globalEnemyKillCount`, globalEnemyKillCount);
 
     enemyPicker();
     enemyLevelUp();
-    if (inventory.includes(`Monster Tooth`)) {
+    if (inventory.includes(`Gold Tooth`)) {
       btnMonsterTooth.style.visibility = `visible`;
     } else {
       btnMonsterTooth.style.visibility = `hidden`;
@@ -582,13 +396,7 @@ function enemyTester() {
     )}`;
   }
 }
-function addCurrency(property) {
-  //Adding the $ and 1000 seperators to numbers(also adds 2 decimal places i don't know why)
-  return new Intl.NumberFormat(`en-US`, {
-    style: `currency`,
-    currency: `USD`,
-  }).format(property);
-}
+
 function updategoldCount() {
   //Every 33 milliseconds (around 30 frames per second)
   //Add the current gold to localStorage
@@ -599,12 +407,28 @@ function updategoldCount() {
   localStorage.setItem(`properties`, JSON.stringify(properties));
   //And add gold for each property per 33 milsec
   gold = gold + idleGold;
+  goldCollectCount += idleGold;
+  localStorage.setItem(`goldCollectCount`, goldCollectCount);
+  localStorage.setItem(`goldSpendCount`, goldSpendCount);
   //Hide properties for the first time if you don't have enough gold
-  if (gold >= 200 || properties.drone[1] >= 1 || btnDrone.style.opacity === 1) {
+  if (
+    gold >= 200 ||
+    properties.drone[1] >= 1 ||
+    btnDrone.style.opacity === 1 ||
+    properties.minions[1] >= 1
+  ) {
     labelDrone.style.opacity = 1;
     btnDrone.style.opacity = 1;
     labelTurret.style.opacity = 1;
     btnTurret.style.opacity = 1;
+  }
+  if (
+    gold >= 500 ||
+    properties.clickMachine[1] >= 1 ||
+    btnClickMachine.style.opacity === 1
+  ) {
+    labelClickMachine.style.opacity = 1;
+    btnClickMachine.style.opacity = 1;
   }
   //Same for minions
   if (
@@ -666,6 +490,8 @@ function updateButtonValues() {
   labelTurret.textContent = `Turret (${properties.turret[1]})`;
   //Update minions numbers
   btnMinions.value = `Buy ${addCurrency(properties.minions[0])}`;
+  btnClickMachine.value = `Buy ${addCurrency(properties.clickMachine[0])}`;
+  labelClickMachine.textContent = `Click Machine (${properties.clickMachine[1]})`;
   labelMinions.textContent = `Minions (${properties.minions[1]})`;
   //Update chest numbers
   btnChests.value = `Buy chest\n ${addCurrency(properties.chests[0])}`;
@@ -676,25 +502,30 @@ function updateButtonValues() {
   //Turn buttons you can't afford to red
   //Vomiting currently. Super horrible.
   setInterval(e => {
-    if (gold <= properties.survivor[0])
+    if (gold < properties.survivor[0])
       btnsurvivor.style.backgroundColor = `crimson`;
     else btnsurvivor.style.backgroundColor = `gainsboro`;
 
-    if (gold <= properties.clickMultiplier[0])
+    if (gold < properties.clickMultiplier[0])
       btnClickMultiplier.style.backgroundColor = `crimson`;
     else btnClickMultiplier.style.backgroundColor = `gainsboro`;
 
-    if (gold <= properties.drone[0]) btnDrone.style.backgroundColor = `crimson`;
+    if (gold < properties.drone[0]) btnDrone.style.backgroundColor = `crimson`;
     else btnDrone.style.backgroundColor = `gainsboro`;
 
-    if (gold <= properties.turret[0])
+    if (gold < properties.turret[0])
       btnTurret.style.backgroundColor = `crimson`;
     else btnTurret.style.backgroundColor = `gainsboro`;
-    if (gold <= properties.minions[0])
+
+    if (gold < properties.clickMachine[0])
+      btnClickMachine.style.backgroundColor = `crimson`;
+    else btnClickMachine.style.backgroundColor = `gainsboro`;
+
+    if (gold < properties.minions[0])
       btnMinions.style.backgroundColor = `crimson`;
     else btnMinions.style.backgroundColor = `gainsboro`;
 
-    if (gold <= properties.chests[0])
+    if (gold < properties.chests[0])
       btnChests.style.backgroundColor = `crimson`;
     else btnChests.style.backgroundColor = `gainsboro`;
   }, 100);
@@ -741,28 +572,42 @@ function numberOfItems(item) {
     labelItemList.innerHTML += `${counts[positionInArray]}x ${mov}<br>`;
   }
 }
+
 //-----------------------------------------------------------------------------------------------
 //BUTTONS AND EVENT LISTENERS
 //Clicking the button, adds gold
+// let evt = new Event(`click`);
+// setInterval(() => btngold.dispatchEvent(evt), 30);
 btngold.addEventListener(`click`, function () {
   //If you have a crowbar
+  buttonClicks++;
+  localStorage.setItem(`buttonClicks`, buttonClicks);
+
   if (inventory.includes(`Crowbar`)) {
     //If enemy health is above 90% of their max health
     if (
       bossFightCurrent
-        ? bossHealth >= maxBossHealth * 0.8
-        : enemyHealth >= enemyMaxHealth * 0.8
+        ? bossHealth >= maxBossHealth * 0.9
+        : enemyHealth >= enemyMaxHealth * 0.9
     ) {
       //Then do the crowbar buff
       damageOnClick = damageOnClick * crowbarBuff;
     } else {
       //If not, then do normal damage
       damageOnClick =
-        properties.clickMultiplier[1] + enemyLevel - 1 + lensMakerBuff;
+        properties.clickMultiplier[1] +
+        (enemyLevel - 1) * (glassPaneBuff + 1) +
+        lensMakerBuff;
     }
   }
+  if (bossFightCurrent && inventory.includes(`Hollow-Point Rounds`)) {
+    damageOnClick = damageOnClick + damageOnClick * (counts[7] * 0.2);
+  }
   //If you have Crit glasses
-  if (inventory.includes(`Lens Maker`)) {
+  if (
+    inventory.includes(`Brass Knuckles`) ||
+    inventory.includes(`Lens Maker`)
+  ) {
     //Calculate the chance you have of critting on hit, if you have 10 glasses, then you have a 100% chance to crit
     const chance = counts[1] * 0.1;
     //Randomly see if you crit
@@ -776,6 +621,7 @@ btngold.addEventListener(`click`, function () {
       );
       //Double the damage on click
       gold = gold + damageOnClick;
+      goldCollectCount += damageOnClick;
       if (bossFightCurrent) {
         bossHealth = bossHealth.toFixed(1) - damageOnClick.toFixed(1);
       } else {
@@ -785,6 +631,7 @@ btngold.addEventListener(`click`, function () {
   }
   //Deal normal damage
   gold = gold + damageOnClick;
+  goldCollectCount += damageOnClick;
   if (bossFightCurrent) {
     bossHealth = bossHealth.toFixed(1) - damageOnClick.toFixed(1);
   } else {
@@ -793,7 +640,9 @@ btngold.addEventListener(`click`, function () {
 
   //Prevents crowbar from bugging out if you constantly hit them for double damage(if they die before they can reach below 90% hp)
   damageOnClick =
-    properties.clickMultiplier[1] + enemyLevel - 1 + lensMakerBuff;
+    properties.clickMultiplier[1] +
+    (enemyLevel - 1) * (glassPaneBuff + 1) +
+    lensMakerBuff;
 });
 
 //Buying the survivor button
@@ -802,7 +651,7 @@ btnsurvivor.addEventListener(`click`, function (e) {
   if (gold >= properties.survivor[0]) {
     //"Spend" cash (cash-price)
     gold = gold - properties.survivor[0];
-
+    goldSpendCount += properties.survivor[0];
     //Add the property to the object
     properties.survivor[1] = properties.survivor[1] + 1;
 
@@ -819,18 +668,17 @@ btnClickMultiplier.addEventListener(`click`, function () {
   if (gold >= properties.clickMultiplier[0]) {
     //Cost
     gold = gold - properties.clickMultiplier[0];
-
+    goldSpendCount += properties.clickMultiplier[0];
+    damageOnClick =
+      properties.clickMultiplier[1] +
+      (enemyLevel - 1) * (glassPaneBuff + 1) +
+      lensMakerBuff;
     //Deal more damage every click, update idle gold (may change stuff),the price, and text
     properties.clickMultiplier[1] = properties.clickMultiplier[1] + 0.2;
     updateIdleGold();
     updatePrice(`clickMultiplier`);
     updateHistoryText(`Got Click Multiplier`);
     updateButtonValues();
-    monsterToothBuff =
-      counts[6] *
-      (enemyLevel + 7) *
-      (rollOfPenniesBuff + 1) *
-      (properties.clickMultiplier[1] / 2 + 1);
   }
 });
 
@@ -839,7 +687,7 @@ btnDrone.addEventListener(`click`, function (e) {
   if (gold >= properties.drone[0]) {
     //"Spend" cash (cash-price)
     gold = gold - properties.drone[0];
-
+    goldSpendCount += properties.drone[0];
     //Add the property to the object
     properties.drone[1] = properties.drone[1] + 1;
 
@@ -881,12 +729,38 @@ inputFarmName.onblur = e => {
   labelCharactersRemain.style.opacity = 0;
 };
 
+if (properties.clickMachine[1] >= 1) {
+  clickMachineInterval = setInterval(
+    () => btngold.dispatchEvent(clickEvent),
+    Number(properties.clickMachine[2])
+  );
+} else clickMachineInterval = undefined;
+btnClickMachine.addEventListener(`click`, function (e) {
+  if (gold >= properties.clickMachine[0]) {
+    gold = gold - properties.clickMachine[0];
+    goldSpendCount += properties.clickMachine[0];
+    5;
+    properties.clickMachine[1] += 1;
+    properties.clickMachine[2] =
+      properties.clickMachine[2] - properties.clickMachine[2] * 0.1;
+    clickMachineInterval === undefined
+      ? ``
+      : clearInterval(clickMachineInterval);
+    clickMachineInterval = setInterval(
+      () => btngold.dispatchEvent(clickEvent),
+      Number(properties.clickMachine[2])
+    );
+    updatePrice(`clickMachine`);
+    updateHistoryText(`Got Click Machine`);
+    updateButtonValues();
+  }
+});
 btnTurret.addEventListener(`click`, function (e) {
   //Do you have enough cash?
   if (gold >= properties.turret[0]) {
     //"Spend" cash (cash-price)
     gold = gold - properties.turret[0];
-
+    goldSpendCount += properties.turret[0];
     //Add the property to the object
     properties.turret[1] = properties.turret[1] + 1;
 
@@ -903,7 +777,7 @@ btnMinions.addEventListener(`click`, function (e) {
   if (gold >= properties.minions[0]) {
     //"Spend" cash (cash-price)
     gold = gold - properties.minions[0];
-
+    goldSpendCount += properties.minions[0];
     //Add the property to the object
     properties.minions[1] = properties.minions[1] + 1;
 
@@ -920,6 +794,9 @@ btnChests.addEventListener(`click`, function (e) {
   //If you can buy it
   if (gold >= properties.chests[0]) {
     gold = gold - properties.chests[0];
+    goldSpendCount += properties.chests[0];
+    chestOpened++;
+    localStorage.setItem(`chestOpened`, chestOpened);
     //Pick random item from items array, update the price,and text
     let randomItem = items[randomItemNumber()];
     updatePrice(`chests`);
@@ -955,33 +832,56 @@ btnMonsterTooth.addEventListener(`click`, function () {
   btnMonsterTooth.style.left = `${x}vw`;
   btnMonsterTooth.style.top = `${y}vh`;
   gold = gold + monsterToothBuff;
-  enemyHealth = enemyHealth.toFixed(1) - monsterToothBuff.toFixed(1) * 0.01;
+  goldCollectCount += monsterToothBuff;
 });
+
+window.onclick = function (e) {
+  if (
+    e.target !== modalProperties &&
+    e.target !== modalItem &&
+    e.target !== modalStats &&
+    e.target !== modalInfo &&
+    e.target !== modalInfoText &&
+    e.target !== modal &&
+    e.target !== modalText
+    // && e.target !== modalAchievements
+  ) {
+    modalProperties.style.backgroundColor = `gray`;
+    modalStats.style.backgroundColor = `gray`;
+    modalItem.style.backgroundColor = `gray`;
+    // modalAchievements.style.backgroundColor = `gray`;
+    modalInfo.style.display = `none`;
+    modal.style.display = `none`;
+  }
+};
+
 //----------------------------------------------------------------------------------
 //ITEMS
 //I made it a variable so i can cancel it (maybe a debuff??)
 
 let triTipInterval;
 setTimeout(() => {
-  triTipInterval = setInterval(itemFunctions, 500, `Tri-tip Dagger`);
+  triTipInterval = setInterval(itemFunctions, 500, `Poison Dagger`);
 }, 3000);
 
 function itemFunctions(item) {
   //If you got...
   switch (item) {
     //... a syringe:
-    case `Soldier's Syringe`:
+    case `Iron Fist` || `Soldier's Syringe`:
       //For every property boost its damage by 5%
+      changeBackClickMachine = properties.clickMachine[2];
       for (const mov in properties) {
         if (properties[mov][2] > 0) {
           properties[mov][2] =
             properties[mov][2].toFixed(3) * 0.2 + properties[mov][2];
         }
       }
+      properties.clickMachine[2] = changeBackClickMachine;
       updateIdleGold();
       break;
     //... a tri tip
-    case `Tri-tip Dagger`:
+    case `Poison Dagger` || `Tri-tip Dagger`:
       //See the chances of getting a tri tip effect
       const chance = counts[2] * 0.05;
       //So you can turn it back later
@@ -999,8 +899,8 @@ function itemFunctions(item) {
       }
 
       break;
-    //... roll of pennies
-    case `Roll of Pennies`:
+    //... Gold Pouch
+    case `Gold Pouch` || `Roll of Pennies`:
       //Increase how much gold you get on kill
       rollOfPenniesBuff = enemyGoldOnKill * 0.1 + rollOfPenniesBuff;
       //This made some problems so i put it as a number before giving it 4 decimal places
@@ -1009,22 +909,18 @@ function itemFunctions(item) {
       break;
     //... a crowbar
     case `Crowbar`:
-      //Just update the crowbar buff by 50%, what it actually does you can see on button click, along with Lens Maker which isn't here in item functions
+      //Just update the crowbar buff by 50%, what it actually does you can see on button click, along with Brass Knuckles which isn't here in item functions
       crowbarBuff = counts[4] * 0.5 + 1;
       break;
-    case `Delicate Watch`:
+    case `Old Man's Watch` || `Delicate Watch`:
       timeBuff = Number(timeBuff) + 1;
       labelBossToolTip.textContent = `Boss health: ${bossHealth}\r\n Time to beat: ${
         30 + Number(timeBuff)
       }s`;
       localStorage.setItem(`timeBuff`, timeBuff);
       break;
-    case `Monster Tooth`:
-      monsterToothBuff =
-        counts[6] *
-        (enemyLevel + 7) *
-        (rollOfPenniesBuff + 1) *
-        (properties.clickMultiplier[1] / 2 + 1);
+    case `Gold Tooth` || `Monster Tooth`:
+      monsterToothBuff = counts[6] * (enemyLevel + 7) * (rollOfPenniesBuff + 1);
       break;
     default:
       break;
