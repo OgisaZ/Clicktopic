@@ -26,12 +26,13 @@ br {
   font-size: 20px;
   display: inline-block;
   width: 80%;
+  transition: 2s;
 }
 .boldena-font {
   font-family: Boldena;
 }
 .gold {
-  font-size: 173%;
+  font-size: 3vw;
 }
 .gold-styling {
   font-size: 25px;
@@ -63,6 +64,8 @@ br {
   left: 50%;
   opacity: 0.8;
   user-select: none;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 .gold-button:hover {
   background-color: #bebebe;

@@ -107,6 +107,9 @@ const enemies = [
   `PVC Stolarija`,
   `Elder Grandpa`,
 ];
+const enemyBuffs = [`Big`, `Hyper`, `Ecstatic`, `Extreme`, `The Great`];
+//Used for extreme buff checking
+let l = 0;
 //Seeing what the next boss is
 let nextBoss;
 //Current boss health
@@ -199,7 +202,7 @@ const properties = JSON.parse(localStorage.getItem(`properties`)) || {
   chests: [100, 0, 0, 0],
   drone: [250, 0, 0.02, 0],
   turret: [400, 0, 0.05, 0],
-  clickMachine: [500, 0, 2000, 0],
+  clickMachine: [500, 0, 4000, 0],
   minions: [600, 0, 0.1, 0],
 };
 //Used for checking if you have an old save, if i added new properties
@@ -209,7 +212,7 @@ const propertyOriginal = {
   chests: [100, 0, 0, 0],
   drone: [250, 0, 0.02, 0],
   turret: [400, 0, 0.05, 0],
-  clickMachine: [500, 0, 2000, 0],
+  clickMachine: [500, 0, 4000, 0],
   minions: [600, 0, 0.1, 0],
 };
 let monsterToothBuff = counts[6] * (enemyLevel + 7) * (rollOfPenniesBuff + 1);
@@ -237,6 +240,7 @@ const welcomeText = [
   `Thanks`,
   `Ready, Set`,
 ];
+welcomeText.textContent = ``;
 //Display on screen
 //Current gold with thousand seperator
 labelgoldNumber.textContent = addCurrency(gold);
@@ -258,16 +262,17 @@ if (firstLoginDate === undefined) {
 }
 modalText.textContent = ``;
 btnMonsterTooth.style.visibility = `hidden`;
-document.querySelector(`title`).textContent = `Clicktopic. ${
+document.querySelector(`title`).textContent = `Clicktopic ${
   inputFarmName.value ? inputFarmName.value : ``
 }`;
 setInterval(
   () =>
-    (document.querySelector(`title`).textContent = `Clicktopic. ${
+    (document.querySelector(`title`).textContent = `Clicktopic ${
       inputFarmName.value ? inputFarmName.value : ``
     }`),
   3000
 );
+
 function addCurrency(property) {
   //Adding the $ and 1000 seperators to numbers(also adds 2 decimal places i don't know why)
   return new Intl.NumberFormat(`en-US`, {
@@ -275,6 +280,69 @@ function addCurrency(property) {
     currency: `USD`,
   }).format(property);
 }
+let k = 0;
+function gameTextChanger() {
+  if (globalEnemyKillCount < 20) {
+    labelWelcome.textContent = `"Who ${
+      inputFarmName.value === `` ? `are you?"` : `is ${inputFarmName.value}?"`
+    }`;
+  }
+  if (globalEnemyKillCount >= 20) {
+    labelWelcome.textContent = `There are slightly less anomalies around.`;
+  }
+  if (globalEnemyKillCount >= 50) {
+    labelWelcome.textContent = `Travellers are recognizing ${
+      inputFarmName.value === `` ? `you` : inputFarmName.value
+    }.`;
+  }
+  if (globalEnemyKillCount >= 120) {
+    labelWelcome.textContent = `People are thanking ${
+      inputFarmName.value === ``
+        ? `you for your`
+        : `${inputFarmName.value} for their`
+    } work.`;
+  }
+  if (globalEnemyKillCount >= 200) {
+    labelWelcome.textContent = `Some are pretending to be ${
+      inputFarmName.value === `` ? `you` : inputFarmName.value
+    }.`;
+  }
+  if (globalEnemyKillCount >= 250) {
+    labelWelcome.textContent = `There is talk of erecting a new statue.I wonder who it's of.`;
+  }
+  if (globalEnemyKillCount >= 300) {
+    labelWelcome.textContent = `Some people are asking if ${
+      inputFarmName.value === ``
+        ? `you are a myth`
+        : `${inputFarmName.value} is a myth`
+    }.`;
+  }
+  if (globalEnemyKillCount >= 400) {
+    labelWelcome.textContent = `Towns are being named after ${
+      inputFarmName.value === `` ? `you` : inputFarmName.value
+    }.`;
+  }
+  if (globalEnemyKillCount >= 500) {
+    labelWelcome.textContent = `Anomalies are starting to get scared  of ${
+      inputFarmName.value === `` ? `you` : inputFarmName.value
+    }.`;
+  }
+  if (globalEnemyKillCount >= 600) {
+    labelWelcome.textContent = `"I get a little uneasy when im around ${
+      inputFarmName.value === `` ? `them` : inputFarmName.value
+    }."`;
+  }
+  if (globalEnemyKillCount >= 700) {
+    labelWelcome.textContent = `They can run...`;
+  }
+  if (globalEnemyKillCount >= 900) {
+    labelWelcome.textContent = `I can do anything.`;
+  }
+  if (globalEnemyKillCount >= 1000) {
+    labelWelcome.textContent = `There is no use in running.`;
+  }
+}
+
 /////////////////////////////////////////////////////////////////
 //OVDEEEE
 let x = Math.floor(Math.random() * 10) + 45;
@@ -297,18 +365,22 @@ function infoModals(string) {
     ).toFixed(3)}.<br><br>
       Click Multiplier: This is a CLICK property. On click you gain more gold. The more you have the more damage you deal on click. On click, you deal ${damageOnClick.toFixed(
         2
-      )} damage.<br><br>
+      )}. damage.<br><br>
       ${
         btnDrone.style.opacity > 0
-          ? `Drone: This is an IDLE property. This means it's only use is to generate gold passively. Current drone dps is ${
-              properties.drone[2] * properties.drone[1] * 31
-            }<br><br>`
+          ? `Drone: This is an IDLE property. This means it's only use is to generate gold passively. Current drone dps is ${(
+              properties.drone[2] *
+              properties.drone[1] *
+              31
+            ).toFixed(2)}.<br><br>`
           : `<br><br>`
       }${
       btnTurret.style.opacity > 0
-        ? `Turret: This is an IDLE property. This means it's only use is to generate gold passively. Current turret dps is ${
-            properties.turret[2] * properties.turret[1] * 31
-          }<br><br> `
+        ? `Turret: This is an IDLE property. This means it's only use is to generate gold passively. Current turret dps is ${(
+            properties.turret[2] *
+            properties.turret[1] *
+            31
+          ).toFixed(2)}.<br><br> `
         : `<br><br>`
     }${
       btnClickMachine.style.opacity > 0
@@ -320,9 +392,11 @@ function infoModals(string) {
     
     ${
       btnMinions.style.opacity > 0
-        ? `Minions: This is an IDLE property. This means it's only use is to generate gold passively. Current minions dps is ${
-            properties.minions[2] * properties.minions[1] * 31
-          }<br><br> `
+        ? `Minions: This is an IDLE property. This means it's only use is to generate gold passively. Current minions dps is ${(
+            properties.minions[2] *
+            properties.minions[1] *
+            31
+          ).toFixed(2)}<br><br> `
         : `<br><br>`
     }`;
     modalInfoText.innerHTML = htmlInfo;

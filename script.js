@@ -1,6 +1,11 @@
 'use strict';
 
 //----------------------------------------------------------------------------
+let displayEnemy;
+let hypeBuff = false;
+let estaticBuff = false;
+let extremeBuff = false;
+displayEnemy = enemyPicker();
 
 //FUNCTIONS
 function oldSaveUpdate() {
@@ -79,6 +84,7 @@ window.onclick = function (e) {
 
 function enemyPicker() {
   //Take a random item from 0 to the length of enemies array
+
   randomNumber = Math.trunc(Math.random() * enemies.length);
   //Calculate enemy health:
   enemyHealth = (randomNumber + 1) * 2.5 * (enemyLevel * 1.2);
@@ -86,8 +92,85 @@ function enemyPicker() {
   enemyMaxHealth = enemyHealth;
   //Display and choose the enemy name
   const randomEnemy = enemies[randomNumber];
-  btngold.value = `${randomEnemy} \n`;
+  //Chooses the first enemy on load
+  if (displayEnemy === undefined) {
+    return enemies[randomNumber];
+  }
+  if (enemyLevel >= 1) {
+    //0.01
+    const chance = Number(enemyLevel) * 0.01;
+    if (chance >= Math.random()) {
+      const enemyBuff =
+        enemyBuffs[Math.trunc(Math.random() * enemyBuffs.length)];
+      switch (enemyBuff) {
+        case `Big`:
+          enemyHealth = enemyHealth * 2;
+          enemyMaxHealth = enemyHealth;
+          displayEnemy = `${enemyBuff} ${randomEnemy}`;
+          hypeBuff = false;
+          estaticBuff = false;
+          extremeBuff = false;
+          break;
+        case `Hyper`:
+          enemyHealth = enemyHealth * 1.5;
+          idleGold = idleGold / 2;
+          enemyMaxHealth = enemyHealth;
+          displayEnemy = `${enemyBuff} ${randomEnemy}`;
+          hypeBuff = true;
+          estaticBuff = false;
+          extremeBuff = false;
+          break;
+        case `Ecstatic`:
+          enemyHealth = enemyHealth * 0.8;
+          idleGold = idleGold / 1000;
+          enemyMaxHealth = enemyHealth;
+          displayEnemy = `${enemyBuff} ${randomEnemy}`;
+          hypeBuff = false;
+          estaticBuff = true;
+          extremeBuff = false;
+          break;
+        case `Extreme`:
+          enemyHealth = enemyHealth * 1.5;
+          enemyMaxHealth = enemyHealth;
+          displayEnemy = `${enemyBuff} ${randomEnemy}`;
+          hypeBuff = false;
+          estaticBuff = false;
+          extremeBuff = true;
+
+          break;
+        case `The Great`:
+          enemyHealth = enemyHealth * 1.5;
+          enemyMaxHealth = enemyHealth;
+          displayEnemy = `${enemyBuff} ${randomEnemy}`;
+          idleGold = idleGold / 2;
+          hypeBuff = true;
+          estaticBuff = false;
+          extremeBuff = true;
+          break;
+        default:
+          displayEnemy = `${randomEnemy} `;
+          btngold.value = `${displayEnemy}\n`;
+          hypeBuff = false;
+          estaticBuff = false;
+          extremeBuff = false;
+          break;
+      }
+    } else {
+      displayEnemy = `${randomEnemy} `;
+      btngold.value = `${displayEnemy}\n`;
+      hypeBuff = false;
+      estaticBuff = false;
+      extremeBuff = false;
+    }
+  } else {
+    displayEnemy = `${randomEnemy} `;
+    btngold.value = `${displayEnemy}\n`;
+    hypeBuff = false;
+    estaticBuff = false;
+    extremeBuff = false;
+  }
 }
+// let displayEnemy = enemyPicker();
 //Default bossKilled is false (self-explanitory)
 function bossPicker(bossKilled = false) {
   //yaay forof loop
@@ -214,6 +297,8 @@ function displayBoss() {
 function bossFight() {
   //Stop spawning normal enemies
   clearInterval(enemyTesterInterval);
+  hypeBuff = false;
+  updateIdleGold();
   //Set the current killCount to 0 so that you can't cheat by refreshing the page
   enemyKillCount = 0;
   localStorage.setItem(`enemyKillCount`, enemyKillCount);
@@ -357,16 +442,29 @@ function updateItemHistoryText(string) {
 function updateIdleGold() {
   //Idle gold is summing up what every property makes every 33 millisecs
   //Horrible
+
   idleGold = properties.survivor[2] * properties.survivor[1];
   idleGold = idleGold + properties.drone[2] * properties.drone[1];
   idleGold = idleGold + properties.turret[2] * properties.turret[1];
   idleGold = idleGold + properties.minions[2] * properties.minions[1];
+  if (hypeBuff) {
+    idleGold = idleGold / 2;
+    return `Hyper`;
+  }
+  if (estaticBuff) {
+    idleGold = idleGold / 1000;
+    return `Estatic`;
+  }
   localStorage.setItem(`idleGold`, idleGold);
 }
 
 function enemyTester() {
   if (enemyHealth <= 0) {
     //The gold you get on kill is calculated:
+    hypeBuff = false;
+    estaticBuff = false;
+    extremeBuff = false;
+    updateIdleGold();
     gold = gold + (randomNumber + 1) * (enemyGoldOnKill + rollOfPenniesBuff);
     goldCollectCount +=
       (randomNumber + 1) * (enemyGoldOnKill + rollOfPenniesBuff);
@@ -391,9 +489,7 @@ function enemyTester() {
     }
   } else {
     //Display the current enemy and their health
-    btngold.value = `${enemies[randomNumber]}\nHealth:${enemyHealth.toFixed(
-      1
-    )}`;
+    btngold.value = `${displayEnemy}\nHealth:${enemyHealth.toFixed(1)}`;
   }
 }
 
@@ -415,7 +511,8 @@ function updategoldCount() {
     gold >= 200 ||
     properties.drone[1] >= 1 ||
     btnDrone.style.opacity === 1 ||
-    properties.minions[1] >= 1
+    properties.minions[1] >= 1 ||
+    properties.clickMachine[1] >= 1
   ) {
     labelDrone.style.opacity = 1;
     btnDrone.style.opacity = 1;
@@ -425,7 +522,8 @@ function updategoldCount() {
   if (
     gold >= 500 ||
     properties.clickMachine[1] >= 1 ||
-    btnClickMachine.style.opacity === 1
+    btnClickMachine.style.opacity === 1 ||
+    properties.minions[1] >= 1
   ) {
     labelClickMachine.style.opacity = 1;
     btnClickMachine.style.opacity = 1;
@@ -572,6 +670,9 @@ function numberOfItems(item) {
     labelItemList.innerHTML += `${counts[positionInArray]}x ${mov}<br>`;
   }
 }
+setTimeout(() => {
+  const gameTextChangerInterval = setInterval(gameTextChanger, 1000);
+}, 5000);
 
 //-----------------------------------------------------------------------------------------------
 //BUTTONS AND EVENT LISTENERS
@@ -582,7 +683,11 @@ btngold.addEventListener(`click`, function () {
   //If you have a crowbar
   buttonClicks++;
   localStorage.setItem(`buttonClicks`, buttonClicks);
-
+  if (extremeBuff && l === 0) {
+    l++;
+    return `Nothing ¯\_(ツ)_/¯"`;
+  }
+  l = 0;
   if (inventory.includes(`Crowbar`)) {
     //If enemy health is above 90% of their max health
     if (
