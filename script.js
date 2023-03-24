@@ -414,7 +414,9 @@ function bossFight() {
     }
     i = 1;
   } else {
+    clearInterval(enemyTesterInterval);
     //During the boss fight, every 33 milisec
+
     btngold.value = `${nextBoss}\nHealth:${bossHealth.toFixed(1)}`;
     progressBar.max = maxBossHealth;
     progressBar.value = bossHealth;
@@ -499,7 +501,7 @@ function enemyTester() {
     } else {
       btnMonsterTooth.style.visibility = `hidden`;
     }
-  } else {
+  } else if (!bossFightCurrent && enemyHealth > 0) {
     //Display the current enemy and their health
     btngold.value = `${displayEnemy}\nHealth:${enemyHealth.toFixed(1)}`;
     // btngold.value = `Clicktopic \nOgisaZ`;
