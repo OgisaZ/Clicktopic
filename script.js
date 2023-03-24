@@ -96,7 +96,7 @@ function enemyPicker() {
   if (displayEnemy === undefined) {
     return enemies[randomNumber];
   }
-  if (enemyLevel >= 1) {
+  if (enemyLevel >= 4) {
     //0.01
     const chance = Number(enemyLevel) * 0.01;
     if (chance >= Math.random()) {
@@ -104,7 +104,7 @@ function enemyPicker() {
         enemyBuffs[Math.trunc(Math.random() * enemyBuffs.length)];
       switch (enemyBuff) {
         case `Big`:
-          enemyHealth = enemyHealth * 2;
+          enemyHealth = enemyHealth * 4;
           enemyMaxHealth = enemyHealth;
           displayEnemy = `${enemyBuff} ${randomEnemy}`;
           hypeBuff = false;
@@ -112,7 +112,7 @@ function enemyPicker() {
           extremeBuff = false;
           break;
         case `Hyper`:
-          enemyHealth = enemyHealth * 1.5;
+          enemyHealth = enemyHealth * 2.5;
           idleGold = idleGold / 2;
           enemyMaxHealth = enemyHealth;
           displayEnemy = `${enemyBuff} ${randomEnemy}`;
@@ -122,7 +122,7 @@ function enemyPicker() {
           break;
         case `Ecstatic`:
           enemyHealth = enemyHealth * 0.8;
-          idleGold = idleGold / 1000;
+          idleGold = idleGold / 100000;
           enemyMaxHealth = enemyHealth;
           displayEnemy = `${enemyBuff} ${randomEnemy}`;
           hypeBuff = false;
@@ -130,7 +130,7 @@ function enemyPicker() {
           extremeBuff = false;
           break;
         case `Extreme`:
-          enemyHealth = enemyHealth * 1.5;
+          enemyHealth = enemyHealth * 3;
           enemyMaxHealth = enemyHealth;
           displayEnemy = `${enemyBuff} ${randomEnemy}`;
           hypeBuff = false;
@@ -139,7 +139,7 @@ function enemyPicker() {
 
           break;
         case `The Great`:
-          enemyHealth = enemyHealth * 1.5;
+          enemyHealth = enemyHealth * 3;
           enemyMaxHealth = enemyHealth;
           displayEnemy = `${enemyBuff} ${randomEnemy}`;
           idleGold = idleGold / 2;
@@ -297,8 +297,13 @@ function displayBoss() {
 function bossFight() {
   //Stop spawning normal enemies
   clearInterval(enemyTesterInterval);
-  hypeBuff = false;
-  updateIdleGold();
+  if (i === 1) {
+    hypeBuff = false;
+    estaticBuff = false;
+    extremeBuff = false;
+    updateIdleGold();
+  }
+
   //Set the current killCount to 0 so that you can't cheat by refreshing the page
   enemyKillCount = 0;
   localStorage.setItem(`enemyKillCount`, enemyKillCount);
@@ -402,7 +407,11 @@ function bossFight() {
     updateButtonValues();
     itemFunctions(randomItem);
     itemFunctions(randomItem2);
-
+    if (!bossFightCurrent || !enemyKillCount <= 0) {
+      enemyTesterInterval = setInterval(enemyTester, 33);
+      enemyPicker();
+      clearInterval(bossFightInterval);
+    }
     i = 1;
   } else {
     //During the boss fight, every 33 milisec
@@ -447,12 +456,15 @@ function updateIdleGold() {
   idleGold = idleGold + properties.drone[2] * properties.drone[1];
   idleGold = idleGold + properties.turret[2] * properties.turret[1];
   idleGold = idleGold + properties.minions[2] * properties.minions[1];
+  if (triTipBuff) {
+    idleGold = idleGold * 2;
+  }
   if (hypeBuff) {
     idleGold = idleGold / 2;
     return `Hyper`;
   }
   if (estaticBuff) {
-    idleGold = idleGold / 1000;
+    idleGold = idleGold / 100000;
     return `Estatic`;
   }
   localStorage.setItem(`idleGold`, idleGold);
@@ -490,6 +502,7 @@ function enemyTester() {
   } else {
     //Display the current enemy and their health
     btngold.value = `${displayEnemy}\nHealth:${enemyHealth.toFixed(1)}`;
+    // btngold.value = `Clicktopic \nOgisaZ`;
   }
 }
 
@@ -507,33 +520,18 @@ function updategoldCount() {
   localStorage.setItem(`goldCollectCount`, goldCollectCount);
   localStorage.setItem(`goldSpendCount`, goldSpendCount);
   //Hide properties for the first time if you don't have enough gold
-  if (
-    gold >= 200 ||
-    properties.drone[1] >= 1 ||
-    btnDrone.style.opacity === 1 ||
-    properties.minions[1] >= 1 ||
-    properties.clickMachine[1] >= 1
-  ) {
+  if (goldCollectCount >= 200) {
     labelDrone.style.opacity = 1;
     btnDrone.style.opacity = 1;
     labelTurret.style.opacity = 1;
     btnTurret.style.opacity = 1;
   }
-  if (
-    gold >= 500 ||
-    properties.clickMachine[1] >= 1 ||
-    btnClickMachine.style.opacity === 1 ||
-    properties.minions[1] >= 1
-  ) {
+  if (goldCollectCount >= 500) {
     labelClickMachine.style.opacity = 1;
     btnClickMachine.style.opacity = 1;
   }
   //Same for minions
-  if (
-    gold >= 600 ||
-    properties.minions[1] >= 1 ||
-    btnMinions.style.opacity === 1
-  ) {
+  if (goldCollectCount >= 600) {
     labelMinions.style.opacity = 1;
     btnMinions.style.opacity = 1;
   }
@@ -673,7 +671,8 @@ function numberOfItems(item) {
 setTimeout(() => {
   const gameTextChangerInterval = setInterval(gameTextChanger, 1000);
 }, 5000);
-
+let cps;
+const cpsInterval = setInterval(() => (cps = 0), 1000);
 //-----------------------------------------------------------------------------------------------
 //BUTTONS AND EVENT LISTENERS
 //Clicking the button, adds gold
@@ -688,6 +687,8 @@ btngold.addEventListener(`click`, function () {
     return `Nothing ¯\_(ツ)_/¯"`;
   }
   l = 0;
+  cps++;
+  setInterval(() => (labelCPS.textContent = cps), 33);
   if (inventory.includes(`Crowbar`)) {
     //If enemy health is above 90% of their max health
     if (
@@ -835,10 +836,10 @@ inputFarmName.onblur = e => {
 };
 
 if (properties.clickMachine[1] >= 1) {
-  clickMachineInterval = setInterval(
-    () => btngold.dispatchEvent(clickEvent),
-    Number(properties.clickMachine[2])
-  );
+  clickMachineInterval = setInterval(() => {
+    btngold.dispatchEvent(clickEvent);
+    buttonClicks--;
+  }, Number(properties.clickMachine[2]));
 } else clickMachineInterval = undefined;
 btnClickMachine.addEventListener(`click`, function (e) {
   if (gold >= properties.clickMachine[0]) {
@@ -847,14 +848,14 @@ btnClickMachine.addEventListener(`click`, function (e) {
     5;
     properties.clickMachine[1] += 1;
     properties.clickMachine[2] =
-      properties.clickMachine[2] - properties.clickMachine[2] * 0.1;
+      properties.clickMachine[2] - properties.clickMachine[2] * 0.03;
     clickMachineInterval === undefined
       ? ``
       : clearInterval(clickMachineInterval);
-    clickMachineInterval = setInterval(
-      () => btngold.dispatchEvent(clickEvent),
-      Number(properties.clickMachine[2])
-    );
+    clickMachineInterval = setInterval(() => {
+      btngold.dispatchEvent(clickEvent);
+      buttonClicks--;
+    }, Number(properties.clickMachine[2]));
     updatePrice(`clickMachine`);
     updateHistoryText(`Got Click Machine`);
     updateButtonValues();
@@ -951,6 +952,7 @@ window.onclick = function (e) {
     e.target !== modalText
     // && e.target !== modalAchievements
   ) {
+    clearInterval(statsInterval);
     modalProperties.style.backgroundColor = `gray`;
     modalStats.style.backgroundColor = `gray`;
     modalItem.style.backgroundColor = `gray`;
@@ -965,9 +967,12 @@ window.onclick = function (e) {
 //I made it a variable so i can cancel it (maybe a debuff??)
 
 let triTipInterval;
+let feralClawInterval;
+let feralClawTimeout = undefined;
 setTimeout(() => {
   triTipInterval = setInterval(itemFunctions, 500, `Poison Dagger`);
 }, 3000);
+feralClawInterval = setInterval(itemFunctions, 999, `Feral Claw`);
 
 function itemFunctions(item) {
   //If you got...
@@ -994,11 +999,11 @@ function itemFunctions(item) {
       //If you do get a tri tip effect to trigger it will:
       if (chance >= Math.random()) {
         //Double you idle gold production (remember the setInterval of 500 milliseconds)
-        idleGold = idleGold * 2;
-        //I don't call updateIdleGold() here because it will reset the whole tri tip effect
+        triTipBuff = true;
+        updateIdleGold();
         //Then after a second, turn idle gold back
         setTimeout(e => {
-          idleGold = currentIdleGold;
+          triTipBuff = false;
           updateIdleGold();
         }, 1000);
       }
@@ -1026,6 +1031,15 @@ function itemFunctions(item) {
       break;
     case `Gold Tooth` || `Monster Tooth`:
       monsterToothBuff = counts[6] * (enemyLevel + 7) * (rollOfPenniesBuff + 1);
+      break;
+    case `Feral Claw`:
+      if (cps >= 6) {
+        updateIdleGold();
+        idleGold = idleGold * (counts[9] * 0.1 + 1);
+      } else {
+        updateIdleGold();
+      }
+
       break;
     default:
       break;

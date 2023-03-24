@@ -11,6 +11,7 @@ const labelBossToolTip = document.querySelector(`.tool-tip-boss`);
 const labelWelcome = document.querySelector(`.welcome-text`);
 const labelCharactersRemain = document.querySelector(`.char-remaining`);
 const labelIdleDPS = document.querySelector(`.dps`);
+const labelCPS = document.querySelector(`.cps`);
 //Property labels
 const labelSurvivor = document.getElementById(`survivor-text`);
 const labelClickMultiplier = document.getElementById(`click-multiplier-text`);
@@ -65,6 +66,7 @@ const items = [
   `Gold Tooth`,
   `Hollow-Point Rounds`,
   `Glass Pane`,
+  `Feral Claw`,
 ];
 //Number of items you have. Arragement is important.
 const counts =
@@ -84,7 +86,7 @@ const enemies = [
   `Kobasica`,
   `Baboon`,
   `Plastic Bag`,
-  `Gaysus`,
+  `GauSUS`,
   `Footer`,
   `Emperor on Dhar`,
   `Imp`,
@@ -103,7 +105,7 @@ const enemies = [
   `Microwave`,
   `CoffeeBohn`,
   `Guperino`,
-  `Vuxna`,
+  `Vuxlot`,
   `PVC Stolarija`,
   `Elder Grandpa`,
 ];
@@ -119,6 +121,8 @@ let bossFightCurrent = false;
 //It's defined here so i can cancel it inside a function
 let bossFightInterval;
 let clickMachineInterval;
+let statsInterval = setInterval(() => {}, 1);
+clearInterval(statsInterval);
 //Max current boss health (used for crowbar and progress bar)
 let maxBossHealth;
 //After defeating final boss, things change like prices,boss health, how much time you have (looping)
@@ -191,6 +195,7 @@ let changeBackClickMachine;
 let crowbarBuff = counts[4] * 0.5 + 1;
 //If you have more than 10 Brass Knuckless, just deal more damage on click. I feel like getting lenses after you have 10 is useless and not fun, so they might as well do something minor
 let lensMakerBuff = counts[1] >= 11 ? counts[1] - 10 : 0;
+let triTipBuff = false;
 const clickEvent = new Event(`click`);
 //Arrow function to give you a random item
 const randomItemNumber = () => Math.trunc(Math.random() * items.length);
@@ -310,35 +315,35 @@ function gameTextChanger() {
   if (globalEnemyKillCount >= 250) {
     labelWelcome.textContent = `There is talk of erecting a new statue.I wonder who it's of.`;
   }
-  if (globalEnemyKillCount >= 300) {
+  if (globalEnemyKillCount >= 400) {
     labelWelcome.textContent = `Some people are asking if ${
       inputFarmName.value === ``
         ? `you are a myth`
         : `${inputFarmName.value} is a myth`
     }.`;
   }
-  if (globalEnemyKillCount >= 400) {
+  if (globalEnemyKillCount >= 600) {
     labelWelcome.textContent = `Towns are being named after ${
       inputFarmName.value === `` ? `you` : inputFarmName.value
     }.`;
   }
-  if (globalEnemyKillCount >= 500) {
-    labelWelcome.textContent = `Anomalies are starting to get scared  of ${
+  if (globalEnemyKillCount >= 900) {
+    labelWelcome.textContent = `Anomalies are starting to get scared of ${
       inputFarmName.value === `` ? `you` : inputFarmName.value
     }.`;
   }
-  if (globalEnemyKillCount >= 600) {
+  if (globalEnemyKillCount >= 1200) {
     labelWelcome.textContent = `"I get a little uneasy when im around ${
       inputFarmName.value === `` ? `them` : inputFarmName.value
     }."`;
   }
-  if (globalEnemyKillCount >= 700) {
+  if (globalEnemyKillCount >= 2000) {
     labelWelcome.textContent = `They can run...`;
   }
-  if (globalEnemyKillCount >= 900) {
+  if (globalEnemyKillCount >= 3000) {
     labelWelcome.textContent = `I can do anything.`;
   }
-  if (globalEnemyKillCount >= 1000) {
+  if (globalEnemyKillCount >= 5000) {
     labelWelcome.textContent = `There is no use in running.`;
   }
 }
@@ -358,6 +363,7 @@ function infoModals(string) {
     modalStats.style.backgroundColor = `gray`;
     modalItem.style.backgroundColor = `gray`;
     // modalAchievements.style.backgroundColor = `gray`;
+    clearInterval(statsInterval);
     let htmlInfo = `<br>Survivor: This is an IDLE property. This means it's only use is to generate gold passively. Current survivor dps is ${(
       properties.survivor[2] *
       properties.survivor[1] *
@@ -406,6 +412,7 @@ function infoModals(string) {
     modalStats.style.backgroundColor = `gray`;
     modalItem.style.backgroundColor = `gainsboro`;
     // modalAchievements.style.backgroundColor = `gray`;
+    clearInterval(statsInterval);
     let htmlInfo = `<br>${
       inventory.includes(`Iron Fist`) || inventory.includes(`Soldier's Syringe`)
         ? `Iron Fist: Boost the damage that properties do by +20% (+20% per stack).<br><br>`
@@ -453,6 +460,10 @@ function infoModals(string) {
       inventory.includes(`Glass Pane`)
         ? `Glass Pane: Deal +20% (+20% per stack) more damage on click. Lose all Glass Panes if you fail a boss fight.<br><br>`
         : `<b>???</b><br><br>`
+    }${
+      inventory.includes(`Feral Claw`)
+        ? `Feral Claw: Having 6 or more CPS will boost idle gold and damage by +10% (+10% per stack) for a second.<br><br>`
+        : `<b>???</b><br><br>`
     }`;
     modalInfoText.innerHTML = htmlInfo;
   }
@@ -461,22 +472,25 @@ function infoModals(string) {
     modalStats.style.backgroundColor = `gainsboro`;
     modalItem.style.backgroundColor = `gray`;
     // modalAchievements.style.backgroundColor = `gray`;
-    let firstLoginSec = (new Date().getTime() - firstLoginDate) / 1000;
-    let min = firstLoginSec / 60;
-    if (min >= 60) min = min - 60 * Math.trunc(firstLoginSec / 60 / 60);
-    let htmlInfo = `<br>Total Enemies Defeated: ${globalEnemyKillCount}<br><br>
+    clearInterval(statsInterval);
+    statsInterval = setInterval(() => {
+      let firstLoginSec = (new Date().getTime() - firstLoginDate) / 1000;
+      let min = firstLoginSec / 60;
+      if (min >= 60) min = min - 60 * Math.trunc(firstLoginSec / 60 / 60);
+      let htmlInfo = `<br>Total Enemies Defeated: ${globalEnemyKillCount}<br><br>
       Total Time Played: ${String(Math.trunc(firstLoginSec / 60 / 60)).padStart(
         2,
         0
       )}:${String(Math.trunc(min)).padStart(2, 0)}:${String(
-      Math.trunc(firstLoginSec % 60)
-    ).padStart(2, 0)}<br><br>
+        Math.trunc(firstLoginSec % 60)
+      ).padStart(2, 0)}<br><br>
       Total Chests Opened: ${chestOpened}<br><br>
       Total Button Clicks: ${buttonClicks}<br><br>
       Total Gold Collected: ${addCurrency(goldCollectCount)}<br><br>
       Total Gold Spent: ${addCurrency(goldSpendCount)}<br><br>
       Total Bosses Defeated: ${bossesKilledCount}`;
-    modalInfoText.innerHTML = htmlInfo;
+      modalInfoText.innerHTML = htmlInfo;
+    }, 33);
   }
   // if (string === `Achievements`) {
   //   modalProperties.style.backgroundColor = `gray`;
