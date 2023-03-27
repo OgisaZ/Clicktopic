@@ -549,11 +549,12 @@ function infoModals(string) {
       Total Button Clicks: ${buttonClicks}<br><br>
       Total Gold Collected: ${addCurrency(goldCollectCountCounter)}<br><br>
       Total Gold Spent: ${addCurrency(goldSpendCountCounter)}<br><br>
-      Total Bosses Defeated: ${bossesKilledCount}<br><br>
+      Total Bosses Defeated: ${bossesKillCountCounter}<br><br>
       Total Times Looped: ${timesLooped}<br><br>
       Gold Collected This Loop: ${addCurrency(goldCollectCount)}<br><br>
       Gold Spent This Loop: ${addCurrency(goldSpendCount)}<br><br>
-      Enemies Defeated This Loop: ${globalEnemyKillCount}`;
+      Enemies Defeated This Loop: ${globalEnemyKillCount}<br><br>
+      Bosses Defeated This Loop: ${bossesKilledCount}<br><br>`;
 
       btnLoopYes.style.visibility = `hidden`;
       btnLoopNo.style.visibility = `hidden`;
@@ -564,9 +565,9 @@ function infoModals(string) {
     modalProperties.style.backgroundColor = `#3f7d9e`;
     modalStats.style.backgroundColor = `#3f7d9e`;
     modalItem.style.backgroundColor = `#3f7d9e`;
-    let htmlInfo = `<br>Are you sure you want to <span style="letter-spacing: 4px;">LOOP</span>? Looping will erase everything and only keep some of your items. You will gain ${Math.ceil(
+    let htmlInfo = `<br>Are you sure you want to <span style="letter-spacing: 4px;">LOOP</span>? Looping will erase EVERYTHING and only keep half of each of your items. You will gain ${Math.ceil(
       enemyLevel / 100
-    )} LCoins.<br><br>`;
+    )} LCoins. With LCoins you will be able to purchase Boosters. Boosters will make it easier for you to earn gold and deal damage. Proceed?<br><br>`;
     btnLoopYes.style.visibility = `visible`;
     btnLoopNo.style.visibility = `visible`;
     modalInfoText.innerHTML = htmlInfo;

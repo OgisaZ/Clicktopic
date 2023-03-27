@@ -89,7 +89,7 @@ window.onclick = function (e) {
 };
 
 function loopCheck() {
-  if (enemyLevel >= 18 && goldCollectCount >= 50000000000) {
+  if (enemyLevel >= 18 && goldCollectCount >= 250000000) {
     btnLoop.style.visibility = `visible`;
     btnLoop.style.opacity = 1;
   }
@@ -214,7 +214,7 @@ function bossPicker(bossKilled = false) {
       priceNerf = 0.05;
       localStorage.setItem(`priceNerf`, priceNerf);
       //Buff the boss health to the normal * bossBuff
-      bossBuff = Number(bossBuff) + 30;
+      bossBuff = Number(bossBuff) + 9;
       //Get more time after looping and put everything to localStorage
       timeBuff += 5;
       time = 30 + Number(timeBuff);
@@ -365,6 +365,7 @@ function bossFight() {
         numberOfItems();
         progressBar.style.visibility = `hidden`;
         setTimeout(() => (labelHistoryText.style.color = `black`), 1500);
+        btnBoss.disabled = false;
       }
       //If you are not currently fighting the boss stop the timer and hide progress bar(used to stop timer)
       if (!bossFightCurrent) {
@@ -372,6 +373,7 @@ function bossFight() {
         labelTimer.textContent = ``;
         progressBar.style.visibility = `hidden`;
         i = 1;
+        btnBoss.disabled = false;
       }
     }, 1000);
   }
@@ -430,6 +432,7 @@ function bossFight() {
       clearInterval(bossFightInterval);
     }
     i = 1;
+    btnBoss.disabled = false;
   } else {
     clearInterval(enemyTesterInterval);
     //During the boss fight, every 33 milisec
@@ -1007,14 +1010,16 @@ btnChests.addEventListener(`click`, function (e) {
       updateButtonValues();
       //ITEM FUNCTIONS!!!(below)
       itemFunctions(randomItem);
-      console.log(randomItem);
+      if (i === 0) {
+        updatePrice(`chests`);
+      }
     }
-    updatePrice(`chests`);
   }
 });
 //Boss fight button
 btnBoss.addEventListener(`click`, function (e) {
   //Make it visible
+  btnBoss.disabled = true;
   btnBoss.style.visibility = `hidden`;
   //Put the right boss name on it
   updateButtonValues();
@@ -1086,9 +1091,11 @@ btnLoopYes.addEventListener(`click`, function () {
   for (const mov in properties) {
     if (properties[mov][2] > 0) {
       properties[mov][2] =
-        properties[mov][2].toFixed(3) * lCoinProperties.idleBoost[2] +
-        properties[mov][2];
+        properties[mov][2].toFixed(3) * (counts[0] * 0.2) + properties[mov][2];
     }
+    properties[mov][2] =
+      properties[mov][2].toFixed(3) * lCoinProperties.idleBoost[2] +
+      properties[mov][2];
   }
   properties.clickMachine[2] = changeBackClickMachine;
   updateButtonValues();
@@ -1129,8 +1136,12 @@ btnLoopYes.addEventListener(`click`, function () {
   timesLooped++;
   localStorage.setItem(`timesLooped`, timesLooped);
 
-  const siphonGold = setInterval(() => (gold = 0), 33);
+  const siphonGold = setInterval(() => {
+    gold = 0;
+    idleGold = 0;
+  }, 33);
   setTimeout(() => clearInterval(siphonGold), 5000);
+  updateIdleGold();
 });
 
 //LCOIN PROPERTIES
