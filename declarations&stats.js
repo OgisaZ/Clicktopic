@@ -455,7 +455,7 @@ function infoModals(string) {
     }
     ${
       timesLooped >= 1
-        ? `AFK Booster: Doubles you afk earnings.<br><br>`
+        ? `AFK Booster: Doubles your afk earnings.<br><br>`
         : `???<br></br>`
     }
     ${
@@ -565,7 +565,7 @@ function infoModals(string) {
     modalProperties.style.backgroundColor = `#3f7d9e`;
     modalStats.style.backgroundColor = `#3f7d9e`;
     modalItem.style.backgroundColor = `#3f7d9e`;
-    let htmlInfo = `<br>Are you sure you want to <span style="letter-spacing: 4px;">LOOP</span>? Looping will erase EVERYTHING and only keep half of each of your items. You will gain ${Math.ceil(
+    let htmlInfo = `<br>Are you sure you want to <span style="letter-spacing: 4px;">LOOP</span>? Looping will erase EVERYTHING and only keep a small amount of each of your items. You will gain ${Math.ceil(
       enemyLevel / 100
     )} LCoins. With LCoins you will be able to purchase Boosters. Boosters will make it easier for you to earn gold and deal damage. Proceed?<br><br>`;
     btnLoopYes.style.visibility = `visible`;

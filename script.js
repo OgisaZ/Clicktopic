@@ -1122,7 +1122,7 @@ btnLoopYes.addEventListener(`click`, function () {
   enemyLevelUp();
   enemyHealth = 0;
   counts = counts.map((mov, index, arr) => {
-    return Math.trunc(mov / 2);
+    return Math.trunc(mov / 5);
   });
   localStorage.setItem(`counts`, JSON.stringify(counts));
   numberOfItems();
@@ -1154,6 +1154,9 @@ btnLoopYes.addEventListener(`click`, function () {
     properties.clickMultiplier[1] +
     (enemyLevel - 1) * (glassPaneBuff + 1) +
     lensMakerBuff;
+  bossesKilledCount = 0;
+  localStorage.setItem(`bossesKilledCount`, bossesKilledCount);
+  monsterToothBuff = counts[6] * (enemyLevel + 7) * (rollOfPenniesBuff + 1);
 });
 
 //LCOIN PROPERTIES
