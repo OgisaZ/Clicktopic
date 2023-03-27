@@ -89,7 +89,11 @@ window.onclick = function (e) {
 };
 
 function loopCheck() {
-  if (enemyLevel >= 18 && goldCollectCount >= 250000000) {
+  if (enemyLevel >= 18 && goldCollectCount >= 250000000 && timesLooped === 0) {
+    btnLoop.style.visibility = `visible`;
+    btnLoop.style.opacity = 1;
+  }
+  if (enemyLevel >= 32 && goldCollectCount >= 500000000 && timesLooped >= 1) {
     btnLoop.style.visibility = `visible`;
     btnLoop.style.opacity = 1;
   }
@@ -1118,9 +1122,9 @@ btnLoopYes.addEventListener(`click`, function () {
   enemyLevelUp();
   enemyHealth = 0;
   counts = counts.map((mov, index, arr) => {
-    gold = 0;
     return Math.trunc(mov / 2);
   });
+  localStorage.setItem(`counts`, JSON.stringify(counts));
   numberOfItems();
   timeBuff = counts[5];
   time = 30 + Number(timeBuff);
@@ -1142,6 +1146,14 @@ btnLoopYes.addEventListener(`click`, function () {
   }, 33);
   setTimeout(() => clearInterval(siphonGold), 5000);
   updateIdleGold();
+  clearInterval(clickMachineInterval);
+  crowbarBuff = counts[4] * 0.5 + 1;
+  lensMakerBuff = counts[1] >= 11 ? counts[1] - 10 : 0;
+  glassPaneBuff = counts[8] * 0.2;
+  damageOnClick =
+    properties.clickMultiplier[1] +
+    (enemyLevel - 1) * (glassPaneBuff + 1) +
+    lensMakerBuff;
 });
 
 //LCOIN PROPERTIES
