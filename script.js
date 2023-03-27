@@ -87,13 +87,9 @@ window.onclick = function (e) {
     modal.style.display = `none`;
   }
 };
-
+//Used with setInterval, to see when to popup the loop button
 function loopCheck() {
-  if (enemyLevel >= 18 && goldCollectCount >= 250000000 && timesLooped === 0) {
-    btnLoop.style.visibility = `visible`;
-    btnLoop.style.opacity = 1;
-  }
-  if (enemyLevel >= 32 && goldCollectCount >= 500000000 && timesLooped >= 1) {
+  if (enemyLevel >= 4) {
     btnLoop.style.visibility = `visible`;
     btnLoop.style.opacity = 1;
   }
@@ -113,13 +109,14 @@ function enemyPicker() {
   if (displayEnemy === undefined) {
     return enemies[randomNumber];
   }
+  //I'm sorry for this code. I was in a hurry. I deeply apologize. But it works!
   if (enemyLevel >= 4) {
-    //0.01
     const chance = Number(enemyLevel) * 0.01;
     if (chance >= Math.random()) {
       const enemyBuff =
         enemyBuffs[Math.trunc(Math.random() * enemyBuffs.length)];
       switch (enemyBuff) {
+        //Big enemies just have more health. Hype buff is halving your idleGold. Estatic is almost getting rid of idleGold. Extreme enemies take damage from every other click (and also idleGold), and The Great enemies just have hype and extreme buffs.
         case `Big`:
           enemyHealth = enemyHealth * 4;
           enemyMaxHealth = enemyHealth;
@@ -172,6 +169,7 @@ function enemyPicker() {
           extremeBuff = false;
           break;
       }
+      //Oh god im vomiting this was horrible
     } else {
       displayEnemy = `${randomEnemy} `;
       btngold.value = `${displayEnemy}\n`;
@@ -187,7 +185,6 @@ function enemyPicker() {
     extremeBuff = false;
   }
 }
-// let displayEnemy = enemyPicker();
 //Default bossKilled is false (self-explanitory)
 function bossPicker(bossKilled = false) {
   //yaay forof loop
@@ -756,10 +753,12 @@ function numberOfItems(item) {
     labelItemList.innerHTML += `${counts[positionInArray]}x ${mov}<br>`;
   }
 }
+//Other js file
 setTimeout(() => {
   const gameTextChangerInterval = setInterval(gameTextChanger, 1000);
 }, 5000);
 let cps;
+//Every second put cps back to 0. Each click add one to cps.
 const cpsInterval = setInterval(() => (cps = 0), 1000);
 //-----------------------------------------------------------------------------------------------
 //BUTTONS AND EVENT LISTENERS
@@ -913,6 +912,10 @@ btnFarmName.addEventListener(`click`, function (e) {
   if (inputFarmName.value.toLowerCase() === `slab u vic`) {
     labelWelcome.textContent = `biljan petrol`;
     localStorage.setItem(`farmName`, `Biljana`);
+  }
+  if (inputFarmName.value.toLowerCase() === `ambatukam`) {
+    labelWelcome.textContent = `kuzma npc`;
+    localStorage.setItem(`farmName`, `Kuzma`);
   }
 });
 //To see how many characters you can type in farmName
@@ -1071,17 +1074,24 @@ window.onclick = function (e) {
   }
 };
 
+calcLCoinGain();
 //LOOPING
+//btnLoop only brings up the modal for the confirmation to loop. btnLoopYes actually loops.
 btnLoop.addEventListener(`click`, () => infoModals(`Loop`));
+//Nothing happenes when you press No.
 btnLoopNo.addEventListener(`click`, clearStatsModal);
 
+//Confirming that you want to loop will:
 btnLoopYes.addEventListener(`click`, function () {
+  //Display the LCoins that you have
   lCoinsStyling.style.display = `block`;
-
-  // lCoins.style.display = `inline`;
+  //Move the gold button a little bit up, so that btnLoop isn't way too far down
   btngold.style.marginTop = `7%`;
   btnLoop.style.visibility = `hidden`;
+  //This a is used for calculating later how many LCoins you will have
+  let a = calcLCoinGain();
   clearStatsModal();
+  //Reset all properties back to default (Minions would bug out if i used propertyOriginal, so i did it like this);
   properties = {
     survivor: [20, 0, 0.003, 0],
     clickMultiplier: [40, 1, 0, 0],
@@ -1091,12 +1101,17 @@ btnLoopYes.addEventListener(`click`, function () {
     clickMachine: [500, 0, 4000, 0],
     minions: [600, 0, 0.1, 0],
   };
+  //Remove every single item from inventory and counts
+  counts = counts.map((mov, index, arr) => {
+    inventory = [];
+    return Math.trunc(mov / Infinity);
+  });
+  localStorage.setItem(`inventory`, JSON.stringify(inventory));
+  localStorage.setItem(`counts`, JSON.stringify(counts));
+  numberOfItems();
+  //If you have Idle Boosters, boost the damage each property (except clickMachine) does.
   changeBackClickMachine = properties.clickMachine[2];
   for (const mov in properties) {
-    if (properties[mov][2] > 0) {
-      properties[mov][2] =
-        properties[mov][2].toFixed(3) * (counts[0] * 0.2) + properties[mov][2];
-    }
     properties[mov][2] =
       properties[mov][2].toFixed(3) * lCoinProperties.idleBoost[2] +
       properties[mov][2];
@@ -1104,8 +1119,10 @@ btnLoopYes.addEventListener(`click`, function () {
   properties.clickMachine[2] = changeBackClickMachine;
   updateButtonValues();
   updateIdleGold();
+  //Put prices back where they belong.
   priceNerf = 0.2;
   localStorage.setItem(`priceNerf`, priceNerf);
+  //Bring every boss back from the dead
   for (const boss of bosses) {
     //Put every boss back to false,as if you haven't defeated them, so they can loop all over again
     boss[1] = false;
@@ -1113,19 +1130,18 @@ btnLoopYes.addEventListener(`click`, function () {
   bossBuff = 0;
   localStorage.setItem(`bossBuff`, bossBuff);
   bossPicker();
-  lCoins = Math.ceil(enemyLevel / 100) + lCoins;
+  //Number of LCoins you had plus how many you will get (calculated in other js file)
+  lCoins = Number(a.toFixed(2)) + Number(lCoins.toFixed(2));
+  //Had to put the image there.
   lCoinsStyling.innerHTML = `<img src="LCoins.png">${lCoins.toLocaleString(
     `en-US`
   )}`;
+  //And finally reset everything back. Everything.
   enemyLevel = 1;
   enemyKillCount = 0;
   enemyLevelUp();
   enemyHealth = 0;
-  counts = counts.map((mov, index, arr) => {
-    return Math.trunc(mov / 5);
-  });
-  localStorage.setItem(`counts`, JSON.stringify(counts));
-  numberOfItems();
+
   timeBuff = counts[5];
   time = 30 + Number(timeBuff);
   localStorage.setItem(`time`, time);
@@ -1139,13 +1155,14 @@ btnLoopYes.addEventListener(`click`, function () {
   localStorage.setItem(`gold`, gold);
   timesLooped++;
   localStorage.setItem(`timesLooped`, timesLooped);
-
+  //I'm pretty sure this isn't necessary anymore, but i really am scared to touch it so it'll be like this for now
   const siphonGold = setInterval(() => {
     gold = 0;
     idleGold = 0;
   }, 33);
-  setTimeout(() => clearInterval(siphonGold), 5000);
+  setTimeout(() => clearInterval(siphonGold), 2000);
   updateIdleGold();
+  //What comment above this one is talking about.
   clearInterval(clickMachineInterval);
   crowbarBuff = counts[4] * 0.5 + 1;
   lensMakerBuff = counts[1] >= 11 ? counts[1] - 10 : 0;
@@ -1160,6 +1177,7 @@ btnLoopYes.addEventListener(`click`, function () {
 });
 
 //LCOIN PROPERTIES
+//Idle boost will just boost how much damage each property does.
 btnIdleBoost.addEventListener(`click`, function (e) {
   if (lCoins >= lCoinProperties.idleBoost[0]) {
     lCoins = lCoins - lCoinProperties.idleBoost[0];
@@ -1183,6 +1201,7 @@ btnIdleBoost.addEventListener(`click`, function (e) {
     )}`;
   }
 });
+//Click boost will boost how many clickMultipliers you get after buying one
 btnClickBoost.addEventListener(`click`, function (e) {
   if (lCoins >= lCoinProperties.clickBoost[0]) {
     lCoins = lCoins - lCoinProperties.clickBoost[0];
@@ -1196,9 +1215,11 @@ btnClickBoost.addEventListener(`click`, function (e) {
     updateButtonValues();
   }
 });
+//AFK boost just doubles how much you earn when you're not playing actively (closed tab)
 btnAFKBoost.addEventListener(`click`, function (e) {
   if (lCoins >= lCoinProperties.afkBoost[0]) {
     lCoins = lCoins - lCoinProperties.afkBoost[0];
+    lCoinProperties.afkBoost[0]++;
     lCoinProperties.afkBoost[0]++;
     lCoinProperties.afkBoost[1]++;
     lCoinProperties.afkBoost[2]++;
@@ -1207,6 +1228,7 @@ btnAFKBoost.addEventListener(`click`, function (e) {
     updateButtonValues();
   }
 });
+//Boosts how many items you get when buying chests by 1
 btnChestBoost.addEventListener(`click`, function (e) {
   if (lCoins >= lCoinProperties.chestBoost[0]) {
     lCoins = lCoins - lCoinProperties.chestBoost[0];
@@ -1278,17 +1300,23 @@ function itemFunctions(item) {
       //Just update the crowbar buff by 50%, what it actually does you can see on button click, along with Brass Knuckles which isn't here in item functions
       crowbarBuff = counts[4] * 0.5 + 1;
       break;
+    //... a delicate watch
     case `Old Man's Watch` || `Delicate Watch`:
+      //Add 1 second to boss timer
       timeBuff = Number(timeBuff) + 1;
       labelBossToolTip.textContent = `Boss health: ${bossHealth}\r\n Time to beat: ${
         30 + Number(timeBuff)
       }s`;
       localStorage.setItem(`timeBuff`, timeBuff);
       break;
+    //... a monster tooth
     case `Gold Tooth` || `Monster Tooth`:
+      //Just update monsterToothBuff
       monsterToothBuff = counts[6] * (enemyLevel + 7) * (rollOfPenniesBuff + 1);
       break;
+    //... a feral claw
     case `Feral Claw`:
+      //If your cps is higher or exactly 6 cps, boost how much idleGold you get
       if (cps >= 6) {
         updateIdleGold();
         idleGold = idleGold * (counts[9] * 0.1 + 1);

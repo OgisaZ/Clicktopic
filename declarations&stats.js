@@ -71,7 +71,7 @@ let gold = Number(localStorage?.getItem(`gold`)) || 0;
 let buttonClicks = localStorage.getItem(`buttonClicks`) || 0;
 
 //All the items you have (from chests)
-const inventory = JSON.parse(localStorage.getItem(`inventory`)) || [];
+let inventory = JSON.parse(localStorage.getItem(`inventory`)) || [];
 const inventoryUnique = new Set(inventory);
 //Array of all the items
 const items = [
@@ -90,6 +90,7 @@ const items = [
 let counts =
   JSON.parse(localStorage.getItem(`counts`)) || new Array(items.length).fill(0);
 let chestOpened = localStorage.getItem(`chestOpened`) || 0;
+//Count and CountCounters are different, but in a small way. Count is the count of the thing in the current loop.CountCounter is as a whole.
 let goldCollectCount = Number(localStorage.getItem(`goldCollectCount`)) || 0;
 let goldCollectCountCounter =
   Number(localStorage.getItem(`goldCollectCountCounter`)) || 0;
@@ -106,7 +107,7 @@ const enemies = [
   `Vermin`,
   `X-RAY`,
   `Squirrel`,
-  `Kobasica`,
+  `Kobasika`,
   `Baboon`,
   `Plastic Bag`,
   `GauSUS`,
@@ -132,6 +133,7 @@ const enemies = [
   `PVC Stolarija`,
   `Elder Grandpa`,
 ];
+//a.k.a prefixes. Used for making the enemies more difficult to defeat
 const enemyBuffs = [`Big`, `Hyper`, `Ecstatic`, `Extreme`, `The Great`];
 //Used for extreme buff checking
 let l = 0;
@@ -218,11 +220,13 @@ let rollOfPenniesBuff = Number(localStorage.getItem(`rollOfPenniesBuff`)) || 0;
 let changeBackCrit;
 let changeBackHistory;
 let chnageBackItemHistory;
+//Used when you get syringes, to not increase time inbetween clicks.
 let changeBackClickMachine;
 //How much damage you deal according to how many crowbars you have
 let crowbarBuff = counts[4] * 0.5 + 1;
 //If you have more than 10 Brass Knuckless, just deal more damage on click. I feel like getting lenses after you have 10 is useless and not fun, so they might as well do something minor
 let lensMakerBuff = counts[1] >= 11 ? counts[1] - 10 : 0;
+//New way of getting tri tip to trigger
 let triTipBuff = false;
 const clickEvent = new Event(`click`);
 //Arrow function to give you a random item
@@ -239,10 +243,10 @@ let properties = JSON.parse(localStorage.getItem(`properties`)) || {
   minions: [600, 0, 0.1, 0],
 };
 let lCoinProperties = JSON.parse(localStorage.getItem(`lCoinProperties`)) || {
-  idleBoost: [1, 0, 0, 0],
-  clickBoost: [1, 0, 1, 0],
+  idleBoost: [2, 0, 0, 0],
+  clickBoost: [2, 0, 1, 0],
   afkBoost: [1, 0, 1, 0],
-  chestBoost: [1, 0, 0, 0],
+  chestBoost: [2, 0, 0, 0],
 };
 let clickBoostBuff = Number(localStorage.getItem(`clickBoostBuff`)) || 0.2;
 //Used for checking if you have an old save, if i added new properties
@@ -321,6 +325,7 @@ function addCurrency(property) {
   }).format(property);
 }
 let k = 0;
+//According to game stats, change the welcome text, so it has another use
 function gameTextChanger() {
   if (globalEnemyKillCount < 20) {
     labelWelcome.textContent = `"Who ${
@@ -381,16 +386,33 @@ function gameTextChanger() {
   if (globalEnemyKillCount >= 5000) {
     labelWelcome.textContent = `There is no use in running.`;
   }
+  if (globalEnemyKillCount >= 10000) {
+    labelWelcome.textContent = `"I saw ${
+      inputFarmName.value === `` ? `them` : inputFarmName.value
+    }. drinking their blood.I'm scared."`;
+  }
+  if (globalEnemyKillCount >= 15000) {
+    labelWelcome.textContent = `Look me in the eyes as you perish.`;
+  }
+
+  //Little easter eggs
+  if (inputFarmName.value.toLowerCase() === `ambatukam`) {
+    labelWelcome.textContent = `Evo ti brate ambatukam aaa ambasiiin`;
+  }
+  if (inputFarmName.value === `resetLS`) {
+    labelWelcome.textContent = `Resetting will delete EVERYTHING!`;
+  }
 }
 
-/////////////////////////////////////////////////////////////////
-//OVDEEEE
+//---------------------------------------------------------------------------------------------------------------
+
 let x = Math.floor(Math.random() * 10) + 45;
 let y = Math.floor(Math.random() * 10) + 47;
 btnMonsterTooth.style.left = `50vw`;
 btnMonsterTooth.style.top = `50vh`;
 btnLoopYes.style.transition = `0s`;
 btnLoopNo.style.transition = `0s`;
+//Modals that popup when you press the info buttons will have this text:
 function infoModals(string) {
   modal.style.display = `none`;
   modalInfo.style.display = `block`;
@@ -561,18 +583,21 @@ function infoModals(string) {
       modalInfoText.innerHTML = htmlInfo;
     }, 33);
   }
+  //btnLoop doesn't actually loop the run, just pops up the modal for the confirmation.
   if (string === `Loop`) {
     modalProperties.style.backgroundColor = `#3f7d9e`;
     modalStats.style.backgroundColor = `#3f7d9e`;
     modalItem.style.backgroundColor = `#3f7d9e`;
-    let htmlInfo = `<br>Are you sure you want to <span style="letter-spacing: 4px;">LOOP</span>? Looping will erase EVERYTHING and only keep a small amount of each of your items. You will gain ${Math.ceil(
-      enemyLevel / 100
-    )} LCoins. With LCoins you will be able to purchase Boosters. Boosters will make it easier for you to earn gold and deal damage. Proceed?<br><br>`;
+    let htmlInfo = `<br>Are you sure you want to <span style="letter-spacing: 4px;">LOOP</span>? Looping will erase EVERYTHING. You will gain ${Number(
+      calcLCoinGain().toFixed(2)
+    )} LCoins (You will have ${
+      Number(calcLCoinGain().toFixed(2)) + Number(lCoins.toFixed(2))
+    } LCoins). With LCoins you will be able to purchase Boosters. Boosters will make it easier for you to earn gold and deal damage. Proceed?<br><br>`;
     btnLoopYes.style.visibility = `visible`;
     btnLoopNo.style.visibility = `visible`;
     modalInfoText.innerHTML = htmlInfo;
   }
-
+  //Maybe in the future
   // if (string === `Achievements`) {
   //   modalProperties.style.backgroundColor = `gray`;
   //   modalStats.style.backgroundColor = `gray`;
@@ -582,7 +607,26 @@ function infoModals(string) {
   //   modalInfoText.innerHTML = htmlInfo;
   // }
 }
-
+//Calculating how many LCoins you will get by:
+function calcLCoinGain() {
+  let numberOfProperties = 0;
+  //See how many items, and properties you have
+  let numberOfItems = counts.reduce((acc, mov) => acc + mov);
+  for (const mov in properties) {
+    if (mov !== `clickMultiplier` && mov !== `chests`) {
+      numberOfProperties += properties[mov][1];
+    }
+  }
+  //Take the average of the property counts
+  let average = numberOfProperties / (Object.keys(properties).length - 2);
+  //And multiply all these paramaters by 0.005
+  let lCoinGain = average * 0.005;
+  lCoinGain += enemyLevel * 0.005;
+  lCoinGain += properties.clickMultiplier[1] * 0.005;
+  lCoinGain += numberOfItems * 0.005;
+  return lCoinGain;
+}
+//Pressing any of the info buttons will call infoModals with the buttons respective string
 modalProperties.addEventListener(`click`, () => infoModals(`Properties`));
 modalItem.addEventListener(`click`, () => infoModals(`Item`));
 modalStats.addEventListener(`click`, () => infoModals(`Stats`));
