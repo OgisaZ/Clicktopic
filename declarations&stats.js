@@ -12,13 +12,19 @@ const labelWelcome = document.querySelector(`.welcome-text`);
 const labelCharactersRemain = document.querySelector(`.char-remaining`);
 const labelIdleDPS = document.querySelector(`.dps`);
 const labelCPS = document.querySelector(`.cps`);
+const labelLCoinShop = document.querySelector(`.lcoin-shop`);
 //Property labels
+
 const labelSurvivor = document.getElementById(`survivor-text`);
 const labelClickMultiplier = document.getElementById(`click-multiplier-text`);
 const labelDrone = document.getElementById(`drone-text`);
 const labelTurret = document.getElementById(`turret-text`);
 const labelClickMachine = document.getElementById(`click-machine-text`);
 const labelMinions = document.getElementById(`minions-text`);
+const labelIdleBoost = document.getElementById(`boost-idle-text`);
+const labelClickBoost = document.getElementById(`boost-click-text`);
+const labelAFKBoost = document.getElementById(`boost-afk-text`);
+const labelChestBoost = document.getElementById(`boost-chest-text`);
 
 //Boss timer label
 const labelTimer = document.querySelector(`.timer`);
@@ -32,6 +38,7 @@ const btngold = document.querySelector(`.gold-button`);
 const btnFarmName = document.getElementById(`farm-name-button`);
 const btnBoss = document.querySelector(`.boss-button`);
 //Property Buttons
+
 const btnsurvivor = document.getElementById(`survivor`);
 const btnClickMultiplier = document.getElementById(`clickMultiplier`);
 const btnDrone = document.getElementById(`drone`);
@@ -39,7 +46,15 @@ const btnTurret = document.getElementById(`turret`);
 const btnClickMachine = document.getElementById(`click-machine`);
 const btnMinions = document.getElementById(`minions`);
 const btnChests = document.querySelector(`.chests`);
+const btnIdleBoost = document.getElementById(`boost-idle`);
+const btnClickBoost = document.getElementById(`boost-click`);
+const btnAFKBoost = document.getElementById(`boost-afk`);
+const btnChestBoost = document.getElementById(`boost-chest`);
+
 const btnMonsterTooth = document.querySelector(`.monster-tooth`);
+const btnLoop = document.querySelector(`.loop-button`);
+const btnLoopYes = document.querySelector(`.loop-yes`);
+const btnLoopNo = document.querySelector(`.loop-no`);
 //Get cash from localStorage if exists (|| if it doesn't)
 const modal = document.querySelector(`.modal`);
 const modalText = document.querySelector(`.modal-content`);
@@ -48,7 +63,10 @@ const modalInfoText = document.querySelector(`.info-modal-content`);
 const modalProperties = document.querySelector(`.info-properties`);
 const modalStats = document.querySelector(`.info-stats`);
 const modalItem = document.querySelector(`.info-item`);
-const modalAchievements = document.querySelector(`.info-achievements`);
+// const modalAchievements = document.querySelector(`.info-achievements`);
+
+const lCoinsStyling = document.querySelector(`.l-coins-styling`);
+let lCoins = Number(localStorage.getItem(`lCoins`)) || 0;
 let gold = Number(localStorage?.getItem(`gold`)) || 0;
 let buttonClicks = localStorage.getItem(`buttonClicks`) || 0;
 
@@ -69,11 +87,16 @@ const items = [
   `Feral Claw`,
 ];
 //Number of items you have. Arragement is important.
-const counts =
+let counts =
   JSON.parse(localStorage.getItem(`counts`)) || new Array(items.length).fill(0);
 let chestOpened = localStorage.getItem(`chestOpened`) || 0;
 let goldCollectCount = Number(localStorage.getItem(`goldCollectCount`)) || 0;
+let goldCollectCountCounter =
+  Number(localStorage.getItem(`goldCollectCountCounter`)) || 0;
 let goldSpendCount = Number(localStorage.getItem(`goldSpendCount`)) || 0;
+let goldSpendCountCounter =
+  Number(localStorage.getItem(`goldSpendCountCounter`)) || 0;
+let timesLooped = localStorage.getItem(`timesLooped`) || 0;
 //Array of enemies. The arrangement of enemies are in the array are important
 const enemies = [
   `Francua`,
@@ -135,6 +158,8 @@ let bossesNumero = 0;
 //Used for seeing if you defeated the current boss
 let bossKilled = false;
 let bossesKilledCount = Number(localStorage.getItem(`bossesKilledCount`)) || 0;
+let bossesKillCountCounter =
+  Number(localStorage.getItem(`bossesKillCountCounter`)) || 0;
 //Used for timer (bossFight function)
 let i = 1;
 //Boss names, the further down the array the more health they have
@@ -166,6 +191,9 @@ let enemyKillCount = Number(localStorage.getItem(`enemyKillCount`)) || 0;
 let globalEnemyKillCount =
   Number(localStorage.getItem(`globalEnemyKillCount`)) || 0;
 let enemyLevel = Number(localStorage.getItem(`enemyLevel`)) || 1;
+let globalEnemyKillCountCounter =
+  localStorage.getItem(`globalEnemyKillCountCounter`) || 0;
+
 //How many you need to kill for them to level up
 let nextLevelReq;
 //Just used to display on screen
@@ -201,7 +229,7 @@ const clickEvent = new Event(`click`);
 const randomItemNumber = () => Math.trunc(Math.random() * items.length);
 //Get the object from localStorage if exists (|| if it doesn't)
 //property:[cost,how many you have, how much this property makes]
-const properties = JSON.parse(localStorage.getItem(`properties`)) || {
+let properties = JSON.parse(localStorage.getItem(`properties`)) || {
   survivor: [20, 0, 0.003, 0],
   clickMultiplier: [40, 1, 0, 0],
   chests: [100, 0, 0, 0],
@@ -210,8 +238,15 @@ const properties = JSON.parse(localStorage.getItem(`properties`)) || {
   clickMachine: [500, 0, 4000, 0],
   minions: [600, 0, 0.1, 0],
 };
+let lCoinProperties = JSON.parse(localStorage.getItem(`lCoinProperties`)) || {
+  idleBoost: [1, 0, 0, 0],
+  clickBoost: [1, 0, 1, 0],
+  afkBoost: [1, 0, 1, 0],
+  chestBoost: [1, 0, 0, 0],
+};
+let clickBoostBuff = Number(localStorage.getItem(`clickBoostBuff`)) || 0.2;
 //Used for checking if you have an old save, if i added new properties
-const propertyOriginal = {
+let propertyOriginal = {
   survivor: [20, 0, 0.003, 0],
   clickMultiplier: [40, 1, 0, 0],
   chests: [100, 0, 0, 0],
@@ -354,14 +389,18 @@ let x = Math.floor(Math.random() * 10) + 45;
 let y = Math.floor(Math.random() * 10) + 47;
 btnMonsterTooth.style.left = `50vw`;
 btnMonsterTooth.style.top = `50vh`;
-
+btnLoopYes.style.transition = `0s`;
+btnLoopNo.style.transition = `0s`;
 function infoModals(string) {
   modal.style.display = `none`;
   modalInfo.style.display = `block`;
+  btnLoopYes.style.visibility = `hidden`;
+  btnLoopNo.style.visibility = `hidden`;
+
   if (string === `Properties`) {
-    modalProperties.style.backgroundColor = `gainsboro`;
-    modalStats.style.backgroundColor = `gray`;
-    modalItem.style.backgroundColor = `gray`;
+    modalProperties.style.backgroundColor = `#8ac4e3`;
+    modalStats.style.backgroundColor = `#3f7d9e`;
+    modalItem.style.backgroundColor = `#3f7d9e`;
     // modalAchievements.style.backgroundColor = `gray`;
     clearInterval(statsInterval);
     let htmlInfo = `<br>Survivor: This is an IDLE property. This means it's only use is to generate gold passively. Current survivor dps is ${(
@@ -379,7 +418,7 @@ function infoModals(string) {
               properties.drone[1] *
               31
             ).toFixed(2)}.<br><br>`
-          : `<br><br>`
+          : `???<br><br>`
       }${
       btnTurret.style.opacity > 0
         ? `Turret: This is an IDLE property. This means it's only use is to generate gold passively. Current turret dps is ${(
@@ -387,13 +426,13 @@ function infoModals(string) {
             properties.turret[1] *
             31
           ).toFixed(2)}.<br><br> `
-        : `<br><br>`
+        : `???<br><br>`
     }${
       btnClickMachine.style.opacity > 0
         ? `Click Machine: This is a IDLE-CLICK property. This means that it simulates a click, and thus gets all the item bonuses that clicking has. Currently clicks once every ${(
             properties.clickMachine[2] / 1000
           ).toFixed(3)} second.<br><br>`
-        : `<br></br>`
+        : `???<br></br>`
     }
     
     ${
@@ -403,14 +442,34 @@ function infoModals(string) {
             properties.minions[1] *
             31
           ).toFixed(2)}<br><br> `
-        : `<br><br>`
+        : `???<br><br>`
+    }
+    ${
+      timesLooped >= 1
+        ? `Idle Booster: Boosts damage for all properties by 100%.<br><br>`
+        : `???<br><br>`
+    }${
+      timesLooped >= 1
+        ? `Click Booster:Doubles how many click multipliers you get when you buy them.<br><br>`
+        : `???<br></br>`
+    }
+    ${
+      timesLooped >= 1
+        ? `AFK Booster: Doubles you afk earnings.<br><br>`
+        : `???<br></br>`
+    }
+    ${
+      timesLooped >= 1
+        ? `Chest Booster: Get 1 more item when buying chests, for the price of 1. `
+        : `???<br></br>`
     }`;
+
     modalInfoText.innerHTML = htmlInfo;
   }
   if (string === `Item`) {
-    modalProperties.style.backgroundColor = `gray`;
-    modalStats.style.backgroundColor = `gray`;
-    modalItem.style.backgroundColor = `gainsboro`;
+    modalProperties.style.backgroundColor = `#3f7d9e`;
+    modalStats.style.backgroundColor = `#3f7d9e`;
+    modalItem.style.backgroundColor = `#8ac4e3`;
     // modalAchievements.style.backgroundColor = `gray`;
     clearInterval(statsInterval);
     let htmlInfo = `<br>${
@@ -465,19 +524,21 @@ function infoModals(string) {
         ? `Feral Claw: Having 6 or more CPS will boost idle gold and damage by +10% (+10% per stack) for a second.<br><br>`
         : `<b>???</b><br><br>`
     }`;
+    btnLoopYes.style.visibility = `hidden`;
+    btnLoopNo.style.visibility = `hidden`;
     modalInfoText.innerHTML = htmlInfo;
   }
   if (string === `Stats`) {
-    modalProperties.style.backgroundColor = `gray`;
-    modalStats.style.backgroundColor = `gainsboro`;
-    modalItem.style.backgroundColor = `gray`;
+    modalProperties.style.backgroundColor = `#3f7d9e`;
+    modalStats.style.backgroundColor = `#8ac4e3`;
+    modalItem.style.backgroundColor = `#3f7d9e`;
     // modalAchievements.style.backgroundColor = `gray`;
     clearInterval(statsInterval);
     statsInterval = setInterval(() => {
       let firstLoginSec = (new Date().getTime() - firstLoginDate) / 1000;
       let min = firstLoginSec / 60;
       if (min >= 60) min = min - 60 * Math.trunc(firstLoginSec / 60 / 60);
-      let htmlInfo = `<br>Total Enemies Defeated: ${globalEnemyKillCount}<br><br>
+      let htmlInfo = `<br>Total Enemies Defeated: ${globalEnemyKillCountCounter}<br><br>
       Total Time Played: ${String(Math.trunc(firstLoginSec / 60 / 60)).padStart(
         2,
         0
@@ -486,12 +547,31 @@ function infoModals(string) {
       ).padStart(2, 0)}<br><br>
       Total Chests Opened: ${chestOpened}<br><br>
       Total Button Clicks: ${buttonClicks}<br><br>
-      Total Gold Collected: ${addCurrency(goldCollectCount)}<br><br>
-      Total Gold Spent: ${addCurrency(goldSpendCount)}<br><br>
-      Total Bosses Defeated: ${bossesKilledCount}`;
+      Total Gold Collected: ${addCurrency(goldCollectCountCounter)}<br><br>
+      Total Gold Spent: ${addCurrency(goldSpendCountCounter)}<br><br>
+      Total Bosses Defeated: ${bossesKilledCount}<br><br>
+      Total Times Looped: ${timesLooped}<br><br>
+      Gold Collected This Loop: ${addCurrency(goldCollectCount)}<br><br>
+      Gold Spent This Loop: ${addCurrency(goldSpendCount)}<br><br>
+      Enemies Defeated This Loop: ${globalEnemyKillCount}`;
+
+      btnLoopYes.style.visibility = `hidden`;
+      btnLoopNo.style.visibility = `hidden`;
       modalInfoText.innerHTML = htmlInfo;
     }, 33);
   }
+  if (string === `Loop`) {
+    modalProperties.style.backgroundColor = `#3f7d9e`;
+    modalStats.style.backgroundColor = `#3f7d9e`;
+    modalItem.style.backgroundColor = `#3f7d9e`;
+    let htmlInfo = `<br>Are you sure you want to <span style="letter-spacing: 4px;">LOOP</span>? Looping will erase everything and only keep some of your items. You will gain ${Math.ceil(
+      enemyLevel / 100
+    )} LCoins.<br><br>`;
+    btnLoopYes.style.visibility = `visible`;
+    btnLoopNo.style.visibility = `visible`;
+    modalInfoText.innerHTML = htmlInfo;
+  }
+
   // if (string === `Achievements`) {
   //   modalProperties.style.backgroundColor = `gray`;
   //   modalStats.style.backgroundColor = `gray`;
@@ -505,4 +585,5 @@ function infoModals(string) {
 modalProperties.addEventListener(`click`, () => infoModals(`Properties`));
 modalItem.addEventListener(`click`, () => infoModals(`Item`));
 modalStats.addEventListener(`click`, () => infoModals(`Stats`));
+
 // modalAchievements.addEventListener(`click`, () => infoModals(`Achievements`));

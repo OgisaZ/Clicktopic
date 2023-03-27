@@ -61,12 +61,18 @@ function timeAway() {
         Math.trunc(awayTimeSec / 60 / 60)
       ).padStart(2, 0)}:${String(min).padStart(2, 0)}:${String(
         Math.trunc(awayTimeSec % 60)
-      ).padStart(2, 0)} and your dps was ${dps}.\n You earned ${addCurrency(
-        (awayTimeSec * dps).toFixed(1)
-      )}`;
+      ).padStart(2, 0)} and your dps was ${dps}.\n ${
+        lCoinProperties.afkBoost[1] >= 1
+          ? `Thanks to your AFK Boosters, you earned ${addCurrency(
+              awayTimeSec * dps * lCoinProperties.afkBoost[2]
+            )} `
+          : `You earned ${addCurrency((awayTimeSec * dps).toFixed(1))}.`
+      }`;
       //Give you the gold that you were away
-      gold = gold + awayTimeSec * dps;
-      goldCollectCount += awayTimeSec * dps;
+      gold = (gold + awayTimeSec * dps) * lCoinProperties.afkBoost[2];
+      goldCollectCount += awayTimeSec * dps * lCoinProperties.afkBoost[2];
+      goldCollectCountCounter +=
+        awayTimeSec * dps * lCoinProperties.afkBoost[2];
     }
   }
   //Every 2.2 seconds update the current time as then and put it in local storage
@@ -82,6 +88,13 @@ window.onclick = function (e) {
   }
 };
 
+function loopCheck() {
+  if (enemyLevel >= 18 && goldCollectCount >= 50000000000) {
+    btnLoop.style.visibility = `visible`;
+    btnLoop.style.opacity = 1;
+  }
+}
+let loopCheckInterval = setInterval(loopCheck, 2000);
 function enemyPicker() {
   //Take a random item from 0 to the length of enemies array
 
@@ -184,9 +197,11 @@ function bossPicker(bossKilled = false) {
       //Set the boss as killed (true)
       bosses[bossesNumero][1] = true;
       bossesKilledCount++;
+      bossesKillCountCounter++;
       //Set bossKilled to false so that you can enter here again after defeating next boss, and put the new bosses array to localStorage
       bossKilled = false;
       localStorage.setItem(`bossesKilledCount`, bossesKilledCount);
+      localStorage.setItem(`bossesKillCountCounter`, bossesKillCountCounter);
       localStorage.setItem(`bosses`, JSON.stringify(bosses));
     }
     //If you have killed the final boss (looping)
@@ -201,7 +216,7 @@ function bossPicker(bossKilled = false) {
       //Buff the boss health to the normal * bossBuff
       bossBuff = Number(bossBuff) + 30;
       //Get more time after looping and put everything to localStorage
-      timeBuff += 10;
+      timeBuff += 5;
       time = 30 + Number(timeBuff);
       localStorage.setItem(`time`, time);
       localStorage.setItem(`timeBuff`, timeBuff);
@@ -368,6 +383,8 @@ function bossFight() {
     gold = gold + (maxBossHealth / 2) * (enemyGoldOnKill + rollOfPenniesBuff);
     goldCollectCount +=
       (maxBossHealth / 2) * (enemyGoldOnKill + rollOfPenniesBuff);
+    goldCollectCountCounter +=
+      (maxBossHealth / 2) * (enemyGoldOnKill + rollOfPenniesBuff);
     updateHistoryText(
       `Got` +
         addCurrency(
@@ -482,6 +499,8 @@ function enemyTester() {
     gold = gold + (randomNumber + 1) * (enemyGoldOnKill + rollOfPenniesBuff);
     goldCollectCount +=
       (randomNumber + 1) * (enemyGoldOnKill + rollOfPenniesBuff);
+    goldCollectCountCounter +=
+      (randomNumber + 1) * (enemyGoldOnKill + rollOfPenniesBuff);
     updateHistoryText(
       `Got ` +
         addCurrency(
@@ -492,6 +511,7 @@ function enemyTester() {
     );
     enemyKillCount++;
     globalEnemyKillCount++;
+    globalEnemyKillCountCounter++;
     localStorage.setItem(`globalEnemyKillCount`, globalEnemyKillCount);
 
     enemyPicker();
@@ -512,15 +532,32 @@ function updategoldCount() {
   //Every 33 milliseconds (around 30 frames per second)
   //Add the current gold to localStorage
   localStorage.setItem(`gold`, gold);
+  localStorage.setItem(`lCoins`, lCoins);
   //Set the text to be fixed to have 1 decimal place
   labelgoldNumber.textContent = addCurrency(gold.toFixed(2));
   //Add the current properties object to localStorage
   localStorage.setItem(`properties`, JSON.stringify(properties));
+  localStorage.setItem(`lCoinProperties`, JSON.stringify(lCoinProperties));
   //And add gold for each property per 33 milsec
   gold = gold + idleGold;
   goldCollectCount += idleGold;
+  goldCollectCountCounter += idleGold;
   localStorage.setItem(`goldCollectCount`, goldCollectCount);
+  localStorage.setItem(`goldCollectCountCounter`, goldCollectCountCounter);
   localStorage.setItem(`goldSpendCount`, goldSpendCount);
+  localStorage.setItem(`goldSpendCountCounter`, goldSpendCountCounter);
+  localStorage.setItem(
+    `globalEnemyKillCountCounter`,
+    globalEnemyKillCountCounter
+  );
+  if (timesLooped >= 1) {
+    lCoinsStyling.style.display = `block`;
+    // lCoins.style.display = `inline`;
+    btngold.style.marginTop = `7%`;
+    lCoinsStyling.innerHTML = `<img src="LCoins.png">${lCoins.toLocaleString(
+      `en-US`
+    )}`;
+  }
   //Hide properties for the first time if you don't have enough gold
   if (goldCollectCount >= 200) {
     labelDrone.style.opacity = 1;
@@ -536,6 +573,17 @@ function updategoldCount() {
   if (goldCollectCount >= 600) {
     labelMinions.style.opacity = 1;
     btnMinions.style.opacity = 1;
+  }
+  if (timesLooped >= 1) {
+    labelLCoinShop.style.opacity = 1;
+    labelIdleBoost.style.opacity = 1;
+    btnIdleBoost.style.opacity = 1;
+    labelClickBoost.style.opacity = 1;
+    btnClickBoost.style.opacity = 1;
+    labelAFKBoost.style.opacity = 1;
+    btnAFKBoost.style.opacity = 1;
+    labelChestBoost.style.opacity = 1;
+    btnChestBoost.style.opacity = 1;
   }
 }
 function automatedDamage() {
@@ -567,6 +615,7 @@ function calcDPS() {
     }, 1000);
   }
 }
+
 function updateButtonValues() {
   //Update survivor numbers
   btnsurvivor.value = `Buy ${addCurrency(properties.survivor[0])}`;
@@ -576,9 +625,9 @@ function updateButtonValues() {
   btnClickMultiplier.value = `Buy ${addCurrency(
     properties.clickMultiplier[0]
   )}`;
-  labelClickMultiplier.textContent = `Click Multiplier (${properties.clickMultiplier[1].toFixed(
-    1
-  )})`;
+  labelClickMultiplier.textContent = `Click Multiplier (${Number(
+    properties.clickMultiplier[1]
+  ).toFixed(1)})`;
 
   //Update drone numbers
   btnDrone.value = `Buy ${addCurrency(properties.drone[0])}`;
@@ -593,6 +642,23 @@ function updateButtonValues() {
   labelMinions.textContent = `Minions (${properties.minions[1]})`;
   //Update chest numbers
   btnChests.value = `Buy chest\n ${addCurrency(properties.chests[0])}`;
+
+  btnIdleBoost.value = `Buy L ${lCoinProperties.idleBoost[0].toLocaleString(
+    `en-US`
+  )}`;
+  labelIdleBoost.textContent = `Idle Booster (${lCoinProperties.idleBoost[1]})`;
+  btnClickBoost.value = `Buy L ${lCoinProperties.clickBoost[0].toLocaleString(
+    `en-US`
+  )}`;
+  labelClickBoost.textContent = `Click Booster (${lCoinProperties.clickBoost[1]})`;
+  btnAFKBoost.value = `Buy L ${lCoinProperties.afkBoost[0].toLocaleString(
+    `en-US`
+  )}`;
+  labelAFKBoost.textContent = `AFK Booster (${lCoinProperties.afkBoost[1]})`;
+  btnChestBoost.value = `Buy L ${lCoinProperties.chestBoost[0].toLocaleString(
+    `en-US`
+  )}`;
+  labelChestBoost.textContent = `Chest Booster (${lCoinProperties.chestBoost[1]})`;
 
   //Update boss button so it has the next boss name on it
   btnBoss.value = `Fight ${nextBoss}`;
@@ -626,6 +692,19 @@ function updateButtonValues() {
     if (gold < properties.chests[0])
       btnChests.style.backgroundColor = `crimson`;
     else btnChests.style.backgroundColor = `gainsboro`;
+
+    if (lCoins < lCoinProperties.idleBoost[0])
+      btnIdleBoost.style.backgroundColor = `crimson`;
+    else btnIdleBoost.style.backgroundColor = `gainsboro`;
+    if (lCoins < lCoinProperties.clickBoost[0])
+      btnClickBoost.style.backgroundColor = `crimson`;
+    else btnClickBoost.style.backgroundColor = `gainsboro`;
+    if (lCoins < lCoinProperties.afkBoost[0])
+      btnAFKBoost.style.backgroundColor = `crimson`;
+    else btnAFKBoost.style.backgroundColor = `gainsboro`;
+    if (lCoins < lCoinProperties.chestBoost[0])
+      btnChestBoost.style.backgroundColor = `crimson`;
+    else btnChestBoost.style.backgroundColor = `gainsboro`;
   }, 100);
 }
 // To get all the stuff on screen
@@ -678,8 +757,6 @@ const cpsInterval = setInterval(() => (cps = 0), 1000);
 //-----------------------------------------------------------------------------------------------
 //BUTTONS AND EVENT LISTENERS
 //Clicking the button, adds gold
-// let evt = new Event(`click`);
-// setInterval(() => btngold.dispatchEvent(evt), 30);
 btngold.addEventListener(`click`, function () {
   //If you have a crowbar
   buttonClicks++;
@@ -730,6 +807,7 @@ btngold.addEventListener(`click`, function () {
       //Double the damage on click
       gold = gold + damageOnClick;
       goldCollectCount += damageOnClick;
+      goldCollectCountCounter += damageOnClick;
       if (bossFightCurrent) {
         bossHealth = bossHealth.toFixed(1) - damageOnClick.toFixed(1);
       } else {
@@ -740,6 +818,7 @@ btngold.addEventListener(`click`, function () {
   //Deal normal damage
   gold = gold + damageOnClick;
   goldCollectCount += damageOnClick;
+  goldCollectCountCounter += damageOnClick;
   if (bossFightCurrent) {
     bossHealth = bossHealth.toFixed(1) - damageOnClick.toFixed(1);
   } else {
@@ -760,6 +839,7 @@ btnsurvivor.addEventListener(`click`, function (e) {
     //"Spend" cash (cash-price)
     gold = gold - properties.survivor[0];
     goldSpendCount += properties.survivor[0];
+    goldSpendCountCounter += properties.survivor[0];
     //Add the property to the object
     properties.survivor[1] = properties.survivor[1] + 1;
 
@@ -777,12 +857,14 @@ btnClickMultiplier.addEventListener(`click`, function () {
     //Cost
     gold = gold - properties.clickMultiplier[0];
     goldSpendCount += properties.clickMultiplier[0];
+    goldSpendCountCounter += properties.clickMultiplier[0];
     damageOnClick =
       properties.clickMultiplier[1] +
       (enemyLevel - 1) * (glassPaneBuff + 1) +
       lensMakerBuff;
     //Deal more damage every click, update idle gold (may change stuff),the price, and text
-    properties.clickMultiplier[1] = properties.clickMultiplier[1] + 0.2;
+    properties.clickMultiplier[1] =
+      Number(properties.clickMultiplier[1]) + Number(clickBoostBuff);
     updateIdleGold();
     updatePrice(`clickMultiplier`);
     updateHistoryText(`Got Click Multiplier`);
@@ -796,6 +878,7 @@ btnDrone.addEventListener(`click`, function (e) {
     //"Spend" cash (cash-price)
     gold = gold - properties.drone[0];
     goldSpendCount += properties.drone[0];
+    goldSpendCountCounter += properties.drone[0];
     //Add the property to the object
     properties.drone[1] = properties.drone[1] + 1;
 
@@ -847,7 +930,7 @@ btnClickMachine.addEventListener(`click`, function (e) {
   if (gold >= properties.clickMachine[0]) {
     gold = gold - properties.clickMachine[0];
     goldSpendCount += properties.clickMachine[0];
-    5;
+    goldSpendCountCounter += properties.clickMachine[0];
     properties.clickMachine[1] += 1;
     properties.clickMachine[2] =
       properties.clickMachine[2] - properties.clickMachine[2] * 0.03;
@@ -869,6 +952,7 @@ btnTurret.addEventListener(`click`, function (e) {
     //"Spend" cash (cash-price)
     gold = gold - properties.turret[0];
     goldSpendCount += properties.turret[0];
+    goldSpendCountCounter += properties.turret[0];
     //Add the property to the object
     properties.turret[1] = properties.turret[1] + 1;
 
@@ -886,6 +970,7 @@ btnMinions.addEventListener(`click`, function (e) {
     //"Spend" cash (cash-price)
     gold = gold - properties.minions[0];
     goldSpendCount += properties.minions[0];
+    goldSpendCountCounter += properties.minions[0];
     //Add the property to the object
     properties.minions[1] = properties.minions[1] + 1;
 
@@ -902,24 +987,29 @@ btnChests.addEventListener(`click`, function (e) {
   //If you can buy it
   if (gold >= properties.chests[0]) {
     gold = gold - properties.chests[0];
-    goldSpendCount += properties.chests[0];
-    chestOpened++;
-    localStorage.setItem(`chestOpened`, chestOpened);
-    //Pick random item from items array, update the price,and text
-    let randomItem = items[randomItemNumber()];
-    updatePrice(`chests`);
-    numberOfItems(randomItem);
-    updateItemHistoryText(`Got ${randomItem}`);
-    btnChests.value = `Buy chest\n ${properties.chests[0].toFixed(1)}`;
-    //Put the item in your inventory
-    inventory.push(randomItem);
+    for (let i = 0; i <= lCoinProperties.chestBoost[2]; i++) {
+      goldSpendCount += properties.chests[0];
+      goldSpendCountCounter += properties.chests[0];
+      chestOpened++;
+      localStorage.setItem(`chestOpened`, chestOpened);
+      //Pick random item from items array, update the price,and text
+      let randomItem = items[randomItemNumber()];
 
-    //Local storage scary
-    localStorage.setItem(`inventory`, JSON.stringify(inventory));
-    localStorage.setItem(`counts`, JSON.stringify(counts));
-    updateButtonValues();
-    //ITEM FUNCTIONS!!!(below)
-    itemFunctions(randomItem);
+      numberOfItems(randomItem);
+      updateItemHistoryText(`Got ${randomItem}`);
+      btnChests.value = `Buy chest\n ${properties.chests[0].toFixed(1)}`;
+      //Put the item in your inventory
+      inventory.push(randomItem);
+
+      //Local storage scary
+      localStorage.setItem(`inventory`, JSON.stringify(inventory));
+      localStorage.setItem(`counts`, JSON.stringify(counts));
+      updateButtonValues();
+      //ITEM FUNCTIONS!!!(below)
+      itemFunctions(randomItem);
+      console.log(randomItem);
+    }
+    updatePrice(`chests`);
   }
 });
 //Boss fight button
@@ -941,8 +1031,19 @@ btnMonsterTooth.addEventListener(`click`, function () {
   btnMonsterTooth.style.top = `${y}vh`;
   gold = gold + monsterToothBuff;
   goldCollectCount += monsterToothBuff;
+  goldCollectCountCounter += monsterToothBuff;
 });
-
+function clearStatsModal() {
+  clearInterval(statsInterval);
+  modalProperties.style.backgroundColor = `#3f7d9e`;
+  modalStats.style.backgroundColor = `#3f7d9e`;
+  modalItem.style.backgroundColor = `#3f7d9e`;
+  // modalAchievements.style.backgroundColor = `gray`;
+  modalInfo.style.display = `none`;
+  modal.style.display = `none`;
+  btnLoopYes.style.visibility = `hidden`;
+  btnLoopNo.style.visibility = `hidden`;
+}
 window.onclick = function (e) {
   if (
     e.target !== modalProperties &&
@@ -951,19 +1052,146 @@ window.onclick = function (e) {
     e.target !== modalInfo &&
     e.target !== modalInfoText &&
     e.target !== modal &&
-    e.target !== modalText
+    e.target !== modalText &&
+    e.target !== btnLoop &&
+    e.target !== btnLoopYes &&
+    e.target !== btnLoopNo
     // && e.target !== modalAchievements
   ) {
-    clearInterval(statsInterval);
-    modalProperties.style.backgroundColor = `gray`;
-    modalStats.style.backgroundColor = `gray`;
-    modalItem.style.backgroundColor = `gray`;
-    // modalAchievements.style.backgroundColor = `gray`;
-    modalInfo.style.display = `none`;
-    modal.style.display = `none`;
+    clearStatsModal();
   }
 };
 
+//LOOPING
+btnLoop.addEventListener(`click`, () => infoModals(`Loop`));
+btnLoopNo.addEventListener(`click`, clearStatsModal);
+
+btnLoopYes.addEventListener(`click`, function () {
+  lCoinsStyling.style.display = `block`;
+
+  // lCoins.style.display = `inline`;
+  btngold.style.marginTop = `7%`;
+  btnLoop.style.visibility = `hidden`;
+  clearStatsModal();
+  properties = {
+    survivor: [20, 0, 0.003, 0],
+    clickMultiplier: [40, 1, 0, 0],
+    chests: [100, 0, 0, 0],
+    drone: [250, 0, 0.02, 0],
+    turret: [400, 0, 0.05, 0],
+    clickMachine: [500, 0, 4000, 0],
+    minions: [600, 0, 0.1, 0],
+  };
+  changeBackClickMachine = properties.clickMachine[2];
+  for (const mov in properties) {
+    if (properties[mov][2] > 0) {
+      properties[mov][2] =
+        properties[mov][2].toFixed(3) * lCoinProperties.idleBoost[2] +
+        properties[mov][2];
+    }
+  }
+  properties.clickMachine[2] = changeBackClickMachine;
+  updateButtonValues();
+  updateIdleGold();
+  priceNerf = 0.2;
+  localStorage.setItem(`priceNerf`, priceNerf);
+  for (const boss of bosses) {
+    //Put every boss back to false,as if you haven't defeated them, so they can loop all over again
+    boss[1] = false;
+  }
+  bossBuff = 0;
+  localStorage.setItem(`bossBuff`, bossBuff);
+  bossPicker();
+  lCoins = Math.ceil(enemyLevel / 100) + lCoins;
+  lCoinsStyling.innerHTML = `<img src="LCoins.png">${lCoins.toLocaleString(
+    `en-US`
+  )}`;
+  enemyLevel = 1;
+  enemyKillCount = 0;
+  enemyLevelUp();
+  enemyHealth = 0;
+  counts = counts.map((mov, index, arr) => {
+    gold = 0;
+    return Math.trunc(mov / 2);
+  });
+  numberOfItems();
+  timeBuff = counts[5];
+  time = 30 + Number(timeBuff);
+  localStorage.setItem(`time`, time);
+  localStorage.setItem(`timeBuff`, timeBuff);
+  labelEnemyLevel.textContent = enemyLevel;
+  rollOfPenniesBuff = enemyGoldOnKill * 0.1;
+  localStorage.setItem(`rollOfPenniesBuff`, rollOfPenniesBuff);
+  globalEnemyKillCount = 0;
+  goldCollectCount = 0;
+  goldSpendCount = 0;
+  localStorage.setItem(`gold`, gold);
+  timesLooped++;
+  localStorage.setItem(`timesLooped`, timesLooped);
+
+  const siphonGold = setInterval(() => (gold = 0), 33);
+  setTimeout(() => clearInterval(siphonGold), 5000);
+});
+
+//LCOIN PROPERTIES
+btnIdleBoost.addEventListener(`click`, function (e) {
+  if (lCoins >= lCoinProperties.idleBoost[0]) {
+    lCoins = lCoins - lCoinProperties.idleBoost[0];
+    lCoinProperties.idleBoost[0]++;
+    lCoinProperties.idleBoost[1]++;
+    lCoinProperties.idleBoost[2]++;
+    changeBackClickMachine = properties.clickMachine[2];
+    for (const mov in properties) {
+      if (properties[mov][2] > 0) {
+        properties[mov][2] =
+          properties[mov][2].toFixed(3) * lCoinProperties.idleBoost[2] +
+          properties[mov][2];
+      }
+    }
+    updateIdleGold();
+    updateHistoryText(`Got Idle Booster`);
+    updateButtonValues();
+    properties.clickMachine[2] = changeBackClickMachine;
+    btnIdleBoost.value = `Buy L ${lCoinProperties.idleBoost[0].toLocaleString(
+      `en-US`
+    )}`;
+  }
+});
+btnClickBoost.addEventListener(`click`, function (e) {
+  if (lCoins >= lCoinProperties.clickBoost[0]) {
+    lCoins = lCoins - lCoinProperties.clickBoost[0];
+    lCoinProperties.clickBoost[0]++;
+    lCoinProperties.clickBoost[1]++;
+    lCoinProperties.clickBoost[2]++;
+    clickBoostBuff = clickBoostBuff * lCoinProperties.clickBoost[2];
+    localStorage.setItem(`clickBoostBuff`, clickBoostBuff);
+    updateIdleGold();
+    updateHistoryText(`Got Click Booster`);
+    updateButtonValues();
+  }
+});
+btnAFKBoost.addEventListener(`click`, function (e) {
+  if (lCoins >= lCoinProperties.afkBoost[0]) {
+    lCoins = lCoins - lCoinProperties.afkBoost[0];
+    lCoinProperties.afkBoost[0]++;
+    lCoinProperties.afkBoost[1]++;
+    lCoinProperties.afkBoost[2]++;
+    updateIdleGold();
+    updateHistoryText(`Got AFK Booster`);
+    updateButtonValues();
+  }
+});
+btnChestBoost.addEventListener(`click`, function (e) {
+  if (lCoins >= lCoinProperties.chestBoost[0]) {
+    lCoins = lCoins - lCoinProperties.chestBoost[0];
+    lCoinProperties.chestBoost[0]++;
+    lCoinProperties.chestBoost[1]++;
+    lCoinProperties.chestBoost[2]++;
+    updateIdleGold();
+    updateHistoryText(`Got Chest Booster`);
+    updateButtonValues();
+  }
+});
 //----------------------------------------------------------------------------------
 //ITEMS
 //I made it a variable so i can cancel it (maybe a debuff??)

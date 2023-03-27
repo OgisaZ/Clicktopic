@@ -129,7 +129,7 @@ br {
   border-radius: 50px;
   border-color: rgb(170, 206, 207);
   box-shadow: 0 3px rgb(170, 206, 207);
-  background-color: #558690;
+  background-color: #28938c;
   transition-property: background-color;
   transition-duration: 0.5s;
   visibility: hidden;
@@ -145,12 +145,12 @@ br {
 }
 .history-text {
   display: inline-block;
-  height: 100px;
+  height: 90px;
   width: 200px;
   padding: 25px;
   opacity: 0;
   transition: opacity 1s;
-  font-size: 150%;
+  font-size: 140%;
   user-select: none;
 }
 .item-history-text {
@@ -180,6 +180,10 @@ br {
   user-select: none;
 }
 .shop-text {
+  font-size: 2rem;
+}
+.lcoin-shop {
+  opacity: 0;
   font-size: 2rem;
 }
 .monster-tooth {
@@ -235,6 +239,26 @@ br {
   opacity: 0;
   transition: 0.5s;
 }
+#boost-idle-text {
+  display: block;
+  opacity: 0;
+  transition: 0.5s;
+}
+#boost-click-text {
+  display: block;
+  opacity: 0;
+  transition: 0.5s;
+}
+#boost-afk-text {
+  display: block;
+  opacity: 0;
+  transition: 0.5s;
+}
+#boost-chest-text {
+  display: block;
+  opacity: 0;
+  transition: 0.5s;
+}
 #survivor {
   color: #33334d;
   width: auto;
@@ -262,6 +286,26 @@ br {
 #minions {
   opacity: 0;
   color: cadetblue;
+  width: auto;
+}
+#boost-idle {
+  opacity: 0;
+  color: rgb(47, 80, 82);
+  width: auto;
+}
+#boost-click {
+  opacity: 0;
+  color: rgb(47, 80, 82);
+  width: auto;
+}
+#boost-afk {
+  opacity: 0;
+  color: rgb(47, 80, 82);
+  width: auto;
+}
+#boost-chest {
+  opacity: 0;
+  color: rgb(47, 80, 82);
   width: auto;
 }
 #farm-name {
@@ -376,7 +420,7 @@ br {
   height: 70%;
   overflow: auto;
   /* background-color: rgb(43, 43, 59); */
-  background-color: rgba(134, 146, 142, 0.815);
+  background-color: #638699;
   padding-top: 3%;
   padding-left: 2%;
   padding-right: 2%;
@@ -432,12 +476,12 @@ br {
   height: 70%;
   overflow-y: auto;
   /* background-color: rgb(43, 43, 59); */
-  background-color: rgba(134, 146, 142, 0.815);
+  background-color: #638699;
   padding-top: 3%;
   padding-left: 2%;
   padding-right: 2%;
   text-align: left;
-  border: 2px solid black;
+  border: 2px solid #4f6673;
   word-wrap: break-word;
 }
 .info-modal-content {
@@ -455,23 +499,79 @@ br {
   top: 83%;
 }
 .info-properties {
+  border: 1.5px solid #2c363b;
   border-radius: 10px;
-  background-color: gray;
+  background-color: #3f7d9e;
   padding: 5px;
   width: 90%;
 }
 .info-stats {
+  border: 1.5px solid #2c363b;
   border-radius: 10px;
-  background-color: gray;
+  background-color: #3f7d9e;
   width: 90%;
   padding: 5px;
 }
 .info-item {
+  border: 1.5px solid #2c363b;
   border-radius: 10px;
-  background-color: gray;
+  background-color: #3f7d9e;
 
   padding: 5px;
   width: 90%;
+}
+.loop-button {
+  border: 1.5px solid #2b4347;
+  border-radius: 10px;
+  background: rgb(40, 147, 140);
+  background: linear-gradient(
+    37deg,
+    rgba(40, 147, 140, 1) 0%,
+    rgba(2, 233, 255, 1) 54%,
+    rgba(255, 231, 0, 1) 100%
+  );
+  box-shadow: 0 9px #4b86a5;
+  letter-spacing: 4px;
+  font-size: 20px;
+  padding: 5px;
+  width: 90%;
+  transition: 0.2s;
+  user-select: none;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 3s;
+}
+.loop-button:active {
+  transform: translateY(5px);
+  transition: 0.2s;
+}
+.loop-yes {
+  position: absolute;
+  z-index: 2;
+  width: 7vw;
+  height: 5vh;
+  top: 40vh;
+  left: 41vw;
+  visibility: hidden;
+}
+.loop-no {
+  position: absolute;
+  z-index: 2;
+  width: 7vw;
+  height: 5vh;
+  top: 40vh;
+  left: 51vw;
+  visibility: hidden;
+}
+.l-coins-styling {
+  font-size: 150%;
+  display: none;
+  margin: 0;
+}
+.l-coins {
+  font-size: 130%;
+  display: none;
+  margin: 0;
 }
 /* .info-achievements {
   border-radius: 10px;
