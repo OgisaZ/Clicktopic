@@ -31,7 +31,7 @@ function oldSaveUpdate() {
     location.reload();
   }
 }
-
+let then = localStorage.getItem(`then`) || null;
 oldSaveUpdate();
 
 function timeAway() {
@@ -997,6 +997,7 @@ btnChests.addEventListener(`click`, function (e) {
   //If you can buy it
   if (gold >= properties.chests[0]) {
     gold = gold - properties.chests[0];
+    updatePrice(`chests`);
     for (let i = 0; i <= lCoinProperties.chestBoost[2]; i++) {
       goldSpendCount += properties.chests[0];
       goldSpendCountCounter += properties.chests[0];
@@ -1017,9 +1018,6 @@ btnChests.addEventListener(`click`, function (e) {
       updateButtonValues();
       //ITEM FUNCTIONS!!!(below)
       itemFunctions(randomItem);
-      if (i === 0) {
-        updatePrice(`chests`);
-      }
     }
   }
 });
@@ -1050,6 +1048,7 @@ function clearStatsModal() {
   modalProperties.style.backgroundColor = `#3f7d9e`;
   modalStats.style.backgroundColor = `#3f7d9e`;
   modalItem.style.backgroundColor = `#3f7d9e`;
+  modalHelp.style.backgroundColor = `#3f7d9e`;
   // modalAchievements.style.backgroundColor = `gray`;
   modalInfo.style.display = `none`;
   modal.style.display = `none`;
@@ -1067,7 +1066,8 @@ window.onclick = function (e) {
     e.target !== modalText &&
     e.target !== btnLoop &&
     e.target !== btnLoopYes &&
-    e.target !== btnLoopNo
+    e.target !== btnLoopNo &&
+    e.target !== modalHelp
     // && e.target !== modalAchievements
   ) {
     clearStatsModal();
@@ -1160,7 +1160,10 @@ btnLoopYes.addEventListener(`click`, function () {
     gold = 0;
     idleGold = 0;
   }, 33);
-  setTimeout(() => clearInterval(siphonGold), 2000);
+  setTimeout(() => {
+    clearInterval(siphonGold);
+    labelgoldNumber.textContent = 0;
+  }, 500);
   updateIdleGold();
   //What comment above this one is talking about.
   clearInterval(clickMachineInterval);
@@ -1174,6 +1177,19 @@ btnLoopYes.addEventListener(`click`, function () {
   bossesKilledCount = 0;
   localStorage.setItem(`bossesKilledCount`, bossesKilledCount);
   monsterToothBuff = counts[6] * (enemyLevel + 7) * (rollOfPenniesBuff + 1);
+  gold = gold - 1;
+  nextBoss = bosses[0][0];
+  //Calculate the health and maximum health of the boss
+  bossHealth =
+    enemyLevel *
+    3 *
+    ((bossesNumero + 1) * 100) *
+    (bossBuff === 0 ? 1 : bossBuff);
+  maxBossHealth = bossHealth;
+  btnBoss.value = `Fight ` + nextBoss;
+  labelBossToolTip.textContent = `Boss health: ${bossHealth}\r\n Time to beat: ${
+    30 + Number(timeBuff)
+  }s`;
 });
 
 //LCOIN PROPERTIES

@@ -1,6 +1,9 @@
 'use strict';
 
+const boldenaFont = document.querySelectorAll(`.boldena-font`);
+let changeFont = 0;
 //Labels
+const labelFontChange = document.querySelector(`.font-change-text`);
 const labelgoldNumber = document.querySelector(`.gold`);
 const labelHistoryText = document.querySelector(`.history-text`);
 const labelItemHistoryText = document.querySelector(`.item-history-text`);
@@ -37,6 +40,7 @@ inputFarmName.value = localStorage.getItem(`farmName`);
 const btngold = document.querySelector(`.gold-button`);
 const btnFarmName = document.getElementById(`farm-name-button`);
 const btnBoss = document.querySelector(`.boss-button`);
+const btnFontChange = document.querySelector(`.font-change`);
 //Property Buttons
 
 const btnsurvivor = document.getElementById(`survivor`);
@@ -63,6 +67,7 @@ const modalInfoText = document.querySelector(`.info-modal-content`);
 const modalProperties = document.querySelector(`.info-properties`);
 const modalStats = document.querySelector(`.info-stats`);
 const modalItem = document.querySelector(`.info-item`);
+const modalHelp = document.querySelector(`.info-help`);
 // const modalAchievements = document.querySelector(`.info-achievements`);
 
 const lCoinsStyling = document.querySelector(`.l-coins-styling`);
@@ -318,11 +323,42 @@ setInterval(
 );
 
 function addCurrency(property) {
-  //Adding the $ and 1000 seperators to numbers(also adds 2 decimal places i don't know why)
-  return new Intl.NumberFormat(`en-US`, {
+  const suffixes = [
+    ``,
+    `thousand`,
+    `million`,
+    `billion`,
+    `trillion`,
+    `quadrillion`,
+    `quintillion`,
+    `sextillion`,
+    `septillion`,
+    `octillion`,
+    `nonillion`,
+    `decillion`,
+    `undecillion`,
+    `duodecillion`,
+    `tredecillion`,
+    `whatthehellion`,
+  ];
+  const magnitude = Math.floor(Math.log10(property) / 3);
+  const divider = Math.pow(10, magnitude * 3);
+  const shortNum = Math.round((property / divider) * 100) / 100;
+  const suffix = suffixes[magnitude];
+  const formatter = new Intl.NumberFormat(`en-US`, {
     style: `currency`,
     currency: `USD`,
-  }).format(property);
+  });
+  if (formatter.format(shortNum) + ` ` + suffix === `$NaN undefined`) {
+    return formatter.format(0);
+  }
+  if (
+    formatter.format(shortNum) + ` ` + suffix ===
+    shortNum + ` ` + undefined
+  ) {
+    return formatter.format(shortNum) + ` alot-ellion`;
+  }
+  return formatter.format(shortNum) + ` ` + suffix;
 }
 let k = 0;
 //According to game stats, change the welcome text, so it has another use
@@ -423,6 +459,7 @@ function infoModals(string) {
     modalProperties.style.backgroundColor = `#8ac4e3`;
     modalStats.style.backgroundColor = `#3f7d9e`;
     modalItem.style.backgroundColor = `#3f7d9e`;
+    modalHelp.style.backgroundColor = `#3f7d9e`;
     // modalAchievements.style.backgroundColor = `gray`;
     clearInterval(statsInterval);
     let htmlInfo = `<br>Survivor: This is an IDLE property. This means it's only use is to generate gold passively. Current survivor dps is ${(
@@ -492,6 +529,7 @@ function infoModals(string) {
     modalProperties.style.backgroundColor = `#3f7d9e`;
     modalStats.style.backgroundColor = `#3f7d9e`;
     modalItem.style.backgroundColor = `#8ac4e3`;
+    modalHelp.style.backgroundColor = `#3f7d9e`;
     // modalAchievements.style.backgroundColor = `gray`;
     clearInterval(statsInterval);
     let htmlInfo = `<br>${
@@ -554,6 +592,7 @@ function infoModals(string) {
     modalProperties.style.backgroundColor = `#3f7d9e`;
     modalStats.style.backgroundColor = `#8ac4e3`;
     modalItem.style.backgroundColor = `#3f7d9e`;
+    modalHelp.style.backgroundColor = `#3f7d9e`;
     // modalAchievements.style.backgroundColor = `gray`;
     clearInterval(statsInterval);
     statsInterval = setInterval(() => {
@@ -588,6 +627,8 @@ function infoModals(string) {
     modalProperties.style.backgroundColor = `#3f7d9e`;
     modalStats.style.backgroundColor = `#3f7d9e`;
     modalItem.style.backgroundColor = `#3f7d9e`;
+    modalHelp.style.backgroundColor = `#3f7d9e`;
+    clearInterval(statsInterval);
     let htmlInfo = `<br>Are you sure you want to <span style="letter-spacing: 4px;">LOOP</span>? Looping will erase EVERYTHING. You will gain ${Number(
       calcLCoinGain().toFixed(2)
     )} LCoins (You will have ${
@@ -606,7 +647,37 @@ function infoModals(string) {
   //   let htmlInfo = `Hello!`;
   //   modalInfoText.innerHTML = htmlInfo;
   // }
+  if (string === `Help`) {
+    modalProperties.style.backgroundColor = `#3f7d9e`;
+    modalStats.style.backgroundColor = `#3f7d9e`;
+    modalItem.style.backgroundColor = `#3f7d9e`;
+    modalHelp.style.backgroundColor = `#8ac4e3`;
+    clearInterval(statsInterval);
+    let htmlInfo = `<br>Hello! Welcome to Clicktopic. Clicktopic is a Idle Game. Idle Games are games where progress can be achieved even without actively playing the game. In the beginning, you will have to be actively playing, to earn gold.<br><br>
+    Click To Earn!
+    <br><br>Clicking on the big button in the center will give you gold. How much gold you get depends on some parameters. Clicking the button also loweres the "Health" of the anomaly. The anomaly's name and health are displayed on the button. When anomaly health reaches 0, you will earn some bonus gold for defeating them.<br><br>
+    Spending Gold!<br><br>
+    With the gold you've collected, you can buy "Properties". With properties, you will earn gold and deal damage without having to press the button. The more properties you have the more expensive they are, but also the more they will earn and do damage. Properties' damage per second (also earns gold per second) and what they do, can be seen on the "Properties" tab in the bottom right corner.<br><br>
+    Unboxing Items!<br><br>
+    Chests are special properties that you can buy, and on every purchase will give you items. Each item can be stacked infinitely, meaning that duplicate items aren't useless, but actually just boost that items function. You can see what each item does in the "Item Functions" tab in the bottom right corner. Items are an amazing way to earn bonuses, and without them, you can't go as far as you can with them.<br><br>
+    Levelling!<br><br>
+    Levels are an indication of your level, and anomaly level. On level up, you will gain more damage on click, but the anomalies get stronger. The stronger the anomaly, the more health they have, but also the more gold they drop when they are defeated.<br><br>
+    Bosses!<br><br>
+    After reaching the anomaly defeat requirements for the current level (see the requirement by holding cursor over level number), a button will appear. Hovering over the button will tell you how much health the boss has, and how much time you have to defeat them. If you do not defeat the boss on time, the level requirements are reset and you will have to defeat that much more anomalies to fight them again. Defeating an anomaly gives you and the anomalies a level up, gives you 2 items, and some gold.<br><br>
+    AFK earning<br><br>
+    While the site is closed, you will still earn gold! How much you earn is based on your idle DPS, and how long you've been away. Coming back to the site will earn you the appropriate amount of gold, as if you were playing the whole time. But you will earn more gold by having the site open, because some of your items will boost your idle DPS only while the site is opened.<br><br>
+    Prefixes<br><br>
+    After reaching level 4, you might see some special anomalies. There is a chance for anomalies to have a prefix, meaning that they have special powers against you. Some powers are as simple as more anomaly health, but some almost entirely disable your idle income and are only weak to clicking damage. These anomalies can be countered by buying the Click Machine property.<br><br>
+    Let's Do It Again!<br><br>
+    After reaching level 4, you will have access to looping. Looping is a way for you to earn LCoins. In exchange you lose all of your progress. LCoins can be used to buy boosters, so you will earn gold much more quickly than before. How much LCoins you get is based on how much properties you have, how many items you have, and your current level. Looping is recommended when you are stuck on some boss, or when you are gaining 2 or more LCoins.<br><br>
+    Saving Your Progress<br><br>
+    If you want to save your progress, pressing the "Save Code" button in the bottom left will save a code to your clipboard. With this code you can press "Load Code" and put the code in the pop up window. After a few seconds your progress will be loaded.<br><br>
+    Made by OgisaZ.<br>
+    <a href="https://github.com/OgisaZ" target="_blank">Link to Github page</a>`;
+    modalInfoText.innerHTML = htmlInfo;
+  }
 }
+
 //Calculating how many LCoins you will get by:
 function calcLCoinGain() {
   let numberOfProperties = 0;
@@ -627,8 +698,54 @@ function calcLCoinGain() {
   return lCoinGain;
 }
 //Pressing any of the info buttons will call infoModals with the buttons respective string
+modalHelp.addEventListener(`click`, () => infoModals(`Help`));
 modalProperties.addEventListener(`click`, () => infoModals(`Properties`));
 modalItem.addEventListener(`click`, () => infoModals(`Item`));
 modalStats.addEventListener(`click`, () => infoModals(`Stats`));
 
 // modalAchievements.addEventListener(`click`, () => infoModals(`Achievements`));
+let changeBackFontText;
+updateFontText(``);
+function updateFontText(string) {
+  //Stop the clearing of history text if it's on screen, and something else happens
+  clearTimeout(changeBackFontText);
+  //Change the opacity from 0 to 1 with a transition effect...
+  labelFontChange.style.opacity = 1;
+  labelFontChange.style.transition = `1s`;
+  labelFontChange.textContent = `${string}`;
+  //...then back to 0
+  changeBackFontText = setTimeout(e => {
+    labelFontChange.style.opacity = 0;
+    labelFontChange.style.transition = `1s`;
+  }, 1500);
+  document.querySelector(`.gold-styling`).style.fontSize = `25px`;
+  document.querySelector(`.gold`).style.fontSize = `3vw`;
+}
+btnFontChange.addEventListener(`click`, function () {
+  if (changeFont === 0) {
+    boldenaFont.forEach(element => {
+      element.style.fontFamily = `'Source Sans Pro', sans-serif`;
+      updateFontText(`Source Sans Pro`);
+    });
+    changeFont++;
+  } else if (changeFont === 1) {
+    boldenaFont.forEach(e => (e.style.fontFamily = `'Montserrat', sans-serif`));
+    updateFontText(`Montserrat`);
+    document.querySelector(`.gold-styling`).style.fontSize = `20px`;
+    document.querySelector(`.gold`).style.fontSize = `2vw`;
+    changeFont++;
+  } else if (changeFont === 2) {
+    boldenaFont.forEach(e => {
+      e.style.fontFamily = `'Roboto Slab', serif`;
+    });
+
+    updateFontText(`Roboto Slab`);
+    document.querySelector(`.gold-styling`).style.fontSize = `20px`;
+    document.querySelector(`.gold`).style.fontSize = `2vw`;
+    changeFont++;
+  } else if (changeFont === 3) {
+    boldenaFont.forEach(e => (e.style.fontFamily = `Boldena`));
+    updateFontText(`Boldena`);
+    changeFont = 0;
+  }
+});

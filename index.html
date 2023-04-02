@@ -7,6 +7,15 @@
     <title>Clicktopic</title>
     <link rel="stylesheet" href="index.css" />
     <link rel="icon" type="image/png" href="icon2.png"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@600&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600&display=swap%27');
+      @import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@600&display=swap%27');
+      
+      
+    </style>
   </head>
   <body class="boldena-font">
     <!-- LEFT SIDE -->
@@ -62,7 +71,10 @@
         <span id="boost-chest-text">Chest Booster</span><input type="button" value="Buy Chest Booster" class="buying boldena-font" id="boost-chest">
        </span>
         </span>
-        
+        <p class="save-load"><span class="font-change-text boldena-font">AA</span><br><button class="buying boldena-font font-change">Change Font</button>&nbsp<button class="buying boldena-font save">Save Code</button>&nbsp<button class="buying boldena-font load">Load Code</button><br><br>
+          <!-- <button class="buying boldena-font save-file">Save File</button> -->
+          <!-- <label for="fileInput">Load File</label><input type="file" id="fileInput" style="display:none" class="buying boldena-font load-file"> -->
+        </p>
       </div>
       <!-- CENTER -->
 
@@ -103,13 +115,13 @@
         <span><progress id="progress" value="32" max="100"></progress></span><br>
         <span>
           <span class="info-modal">
-          <span class="info-modal-content"></span>
+          <span class="info-modal-content boldena-font"></span>
           </span>
         </span>
         <span>
           <!-- The gold button -->
           <span class="modal">
-            <span class="modal-content"></span>
+            <span class="modal-content boldena-font"></span>
             
           </span>
           
@@ -140,6 +152,7 @@
         <br><span class="item-history-text"></span>
         
         <p class="info-buttons">
+          <button class="info-help boldena-font">Help</button>
           <button class="info-properties boldena-font">Properties</button>
           <button class="info-stats boldena-font">Stats</button>
           <button class="info-item boldena-font">Item Functions</button>
@@ -149,6 +162,7 @@
     </div>
     <script src="declarations&stats.js"></script>
     <script src="script.js"></script>
+    <script src="saveload.js"></script>
     
   </body>
 </html>

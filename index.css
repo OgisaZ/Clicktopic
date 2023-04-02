@@ -37,6 +37,9 @@ br {
 .boldena-font {
   font-family: Boldena;
 }
+.source-sans-font {
+  font-family: 'Source Sans Pro', sans-serif;
+}
 .gold {
   font-size: 3vw;
 }
@@ -114,6 +117,7 @@ br {
   border-color: gainsboro;
   box-shadow: 0 3px #999;
   transition: 0.5s;
+  width: auto;
 }
 .buying:hover {
   border-color: #666;
@@ -146,7 +150,7 @@ br {
 .history-text {
   display: inline-block;
   height: 90px;
-  width: 200px;
+  width: 100%;
   padding: 25px;
   opacity: 0;
   transition: opacity 1s;
@@ -498,6 +502,13 @@ br {
   width: 30%;
   top: 83%;
 }
+.info-help {
+  border: 1.5px solid #2c363b;
+  border-radius: 10px;
+  background-color: #3f7d9e;
+  padding: 5px;
+  width: 90%;
+}
 .info-properties {
   border: 1.5px solid #2c363b;
   border-radius: 10px;
@@ -512,6 +523,7 @@ br {
   width: 90%;
   padding: 5px;
 }
+
 .info-item {
   border: 1.5px solid #2c363b;
   border-radius: 10px;
@@ -580,3 +592,23 @@ br {
   padding: 5px;
   width: 90%;
 } */
+.save-load.buttons {
+  width: auto;
+}
+label[for='fileInput'] {
+  display: inline-block;
+  font-size: 90%;
+  width: fit-content;
+  height: fit-content;
+  padding: 4px;
+  border-radius: 50px;
+  background-color: gainsboro;
+  box-shadow: 0 3px #999;
+}
+
+.save-load {
+  display: block;
+  position: absolute;
+  top: 90vh;
+  left: 6vw;
+}
