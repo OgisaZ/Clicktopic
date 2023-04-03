@@ -75,6 +75,7 @@ br {
   user-select: none;
   white-space: pre-wrap;
   word-wrap: break-word;
+  cursor: pointer;
 }
 .gold-button:hover {
   background-color: #bebebe;
@@ -137,6 +138,7 @@ br {
   transition-property: background-color;
   transition-duration: 0.5s;
   visibility: hidden;
+  cursor: pointer;
 }
 .boss-button:hover {
   background-color: rgb(150, 23, 54);
@@ -172,6 +174,7 @@ br {
   width: 70%;
   margin-top: 5%;
   font-size: 15px;
+  cursor: pointer;
 }
 .items {
   position: absolute;
@@ -200,6 +203,7 @@ br {
   box-shadow: 0 3px #999;
   opacity: 0.6;
   background-color: orange;
+  cursor: pointer;
 }
 .monster-tooth:active {
   background-color: orangered;
@@ -266,51 +270,61 @@ br {
 #survivor {
   color: #33334d;
   width: auto;
+  cursor: pointer;
 }
 
 #clickMultiplier {
   color: #995e4f;
   width: auto;
+  cursor: pointer;
 }
 #drone {
   opacity: 0;
   color: rgb(54, 91, 92);
   width: auto;
+  cursor: pointer;
 }
 #turret {
   opacity: 0;
   color: rgb(54, 91, 92);
   width: auto;
+  cursor: pointer;
 }
 #click-machine {
   opacity: 0;
   color: rgb(54, 91, 92);
   width: auto;
+  cursor: pointer;
 }
 #minions {
   opacity: 0;
   color: cadetblue;
   width: auto;
+  cursor: pointer;
 }
 #boost-idle {
   opacity: 0;
   color: rgb(47, 80, 82);
   width: auto;
+  cursor: pointer;
 }
 #boost-click {
   opacity: 0;
   color: rgb(47, 80, 82);
   width: auto;
+  cursor: pointer;
 }
 #boost-afk {
   opacity: 0;
   color: rgb(47, 80, 82);
   width: auto;
+  cursor: pointer;
 }
 #boost-chest {
   opacity: 0;
   color: rgb(47, 80, 82);
   width: auto;
+  cursor: pointer;
 }
 #farm-name {
   opacity: 0.3;
@@ -508,6 +522,10 @@ br {
   background-color: #3f7d9e;
   padding: 5px;
   width: 90%;
+  cursor: pointer;
+}
+.info-help:hover {
+  background-color: #4a90b6;
 }
 .info-properties {
   border: 1.5px solid #2c363b;
@@ -515,6 +533,10 @@ br {
   background-color: #3f7d9e;
   padding: 5px;
   width: 90%;
+  cursor: pointer;
+}
+.info-properties:hover {
+  background-color: #4a90b6;
 }
 .info-stats {
   border: 1.5px solid #2c363b;
@@ -522,15 +544,21 @@ br {
   background-color: #3f7d9e;
   width: 90%;
   padding: 5px;
+  cursor: pointer;
 }
-
+.info-stats:hover {
+  background-color: #4a90b6;
+}
 .info-item {
   border: 1.5px solid #2c363b;
   border-radius: 10px;
   background-color: #3f7d9e;
-
+  cursor: pointer;
   padding: 5px;
   width: 90%;
+}
+.info-item:hover {
+  background-color: #4a90b6;
 }
 .loop-button {
   border: 1.5px solid #2b4347;
@@ -552,6 +580,7 @@ br {
   visibility: hidden;
   opacity: 0;
   transition: opacity 3s;
+  cursor: pointer;
 }
 .loop-button:active {
   transform: translateY(5px);
@@ -565,6 +594,7 @@ br {
   top: 40vh;
   left: 41vw;
   visibility: hidden;
+  cursor: pointer;
 }
 .loop-no {
   position: absolute;
@@ -574,6 +604,7 @@ br {
   top: 40vh;
   left: 51vw;
   visibility: hidden;
+  cursor: pointer;
 }
 .l-coins-styling {
   font-size: 150%;
@@ -611,4 +642,9 @@ label[for='fileInput'] {
   position: absolute;
   top: 90vh;
   left: 6vw;
+}
+.divider {
+  border-radius: 1px;
+  width: 90%;
+  border-color: #6d9592;
 }

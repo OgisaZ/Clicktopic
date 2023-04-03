@@ -109,8 +109,9 @@ function enemyPicker() {
   if (displayEnemy === undefined) {
     return enemies[randomNumber];
   }
-  //I'm sorry for this code. I was in a hurry. I deeply apologize. But it works!
+
   if (enemyLevel >= 4) {
+    //I'm sorry for this code. I was in a hurry. I deeply apologize. But it works!
     const chance = Number(enemyLevel) * 0.01;
     if (chance >= Math.random()) {
       const enemyBuff =
@@ -437,7 +438,10 @@ function bossFight() {
   } else {
     clearInterval(enemyTesterInterval);
     //During the boss fight, every 33 milisec
-
+    hypeBuff = false;
+    estaticBuff = false;
+    extremeBuff = false;
+    updateIdleGold();
     btngold.value = `${nextBoss}\nHealth:${bossHealth.toFixed(1)}`;
     progressBar.max = maxBossHealth;
     progressBar.value = bossHealth;
@@ -479,18 +483,18 @@ function updateIdleGold() {
   idleGold = idleGold + properties.drone[2] * properties.drone[1];
   idleGold = idleGold + properties.turret[2] * properties.turret[1];
   idleGold = idleGold + properties.minions[2] * properties.minions[1];
+  localStorage.setItem(`idleGold`, idleGold);
   if (triTipBuff) {
     idleGold = idleGold * 2;
   }
-  if (hypeBuff) {
+  if (hypeBuff && !bossFightCurrent) {
     idleGold = idleGold / 2;
     return `Hyper`;
   }
-  if (estaticBuff) {
+  if (estaticBuff && !bossFightCurrent) {
     idleGold = idleGold / 100000;
     return `Estatic`;
   }
-  localStorage.setItem(`idleGold`, idleGold);
 }
 
 function enemyTester() {
@@ -525,7 +529,8 @@ function enemyTester() {
     } else {
       btnMonsterTooth.style.visibility = `hidden`;
     }
-  } else if (!bossFightCurrent && enemyHealth > 0) {
+  }
+  if (!bossFightCurrent && enemyHealth > 0) {
     //Display the current enemy and their health
     btngold.value = `${displayEnemy}\nHealth:${enemyHealth.toFixed(1)}`;
     // btngold.value = `Clicktopic \nOgisaZ`;
@@ -563,18 +568,18 @@ function updategoldCount() {
     )}`;
   }
   //Hide properties for the first time if you don't have enough gold
-  if (goldCollectCount >= 200) {
+  if (goldCollectCountCounter >= 200) {
     labelDrone.style.opacity = 1;
     btnDrone.style.opacity = 1;
     labelTurret.style.opacity = 1;
     btnTurret.style.opacity = 1;
   }
-  if (goldCollectCount >= 500) {
+  if (goldCollectCountCounter >= 500) {
     labelClickMachine.style.opacity = 1;
     btnClickMachine.style.opacity = 1;
   }
   //Same for minions
-  if (goldCollectCount >= 600) {
+  if (goldCollectCountCounter >= 600) {
     labelMinions.style.opacity = 1;
     btnMinions.style.opacity = 1;
   }
@@ -713,14 +718,16 @@ function updateButtonValues() {
 }
 // To get all the stuff on screen
 enemyLevelUp();
+let enemyTesterInterval = setInterval(enemyTester, 33);
 enemyPicker();
 bossPicker();
 updateButtonValues();
 updateIdleGold();
+
 // I made them variables so i could cancel them, and also looks better without the setInterval thing on the whole function
 let updategoldCountInterval = setInterval(updategoldCount, 33);
 let automatedDamageInterval = setInterval(automatedDamage, 33);
-let enemyTesterInterval = setInterval(enemyTester, 33);
+
 let displayBossInterval = setInterval(displayBoss, 33);
 let calcDPSInterval = setInterval(calcDPS, 33);
 let timeAwayInterval = setInterval(timeAway, 2200);
@@ -730,7 +737,7 @@ function updatePrice(property) {
 
   const currentPrice = properties[property][0];
 
-  //The new price is the current(previous) price times 0.2
+  //The new price is the current(previous) price times 0.2 or 0.05 after defeating final boss
   let price = Number(currentPrice + currentPrice * priceNerf);
 
   //Add it to the object, and set it to 1 decimal place
@@ -756,7 +763,7 @@ function numberOfItems(item) {
 //Other js file
 setTimeout(() => {
   const gameTextChangerInterval = setInterval(gameTextChanger, 1000);
-}, 5000);
+}, 10000);
 let cps;
 //Every second put cps back to 0. Each click add one to cps.
 const cpsInterval = setInterval(() => (cps = 0), 1000);
@@ -837,62 +844,97 @@ btngold.addEventListener(`click`, function () {
     (enemyLevel - 1) * (glassPaneBuff + 1) +
     lensMakerBuff;
 });
+function buySurvivor() {
+  gold = gold - properties.survivor[0];
+  goldSpendCount += properties.survivor[0];
+  goldSpendCountCounter += properties.survivor[0];
+  //Add the property to the object
+  properties.survivor[1] = properties.survivor[1] + 1;
 
+  //Update the idle gold production,the price of the property, and text
+  updateIdleGold();
+  updatePrice(`survivor`);
+  updateHistoryText(`Got Survivor`);
+  updateButtonValues();
+}
 //Buying the survivor button
 btnsurvivor.addEventListener(`click`, function (e) {
+  if (e.ctrlKey) {
+    for (let i = 1; i < 10; i++) {
+      if (gold >= properties.survivor[0]) {
+        buySurvivor();
+      } else {
+        break;
+      }
+    }
+  }
+
   //Do you have enough cash?
   if (gold >= properties.survivor[0]) {
     //"Spend" cash (cash-price)
-    gold = gold - properties.survivor[0];
-    goldSpendCount += properties.survivor[0];
-    goldSpendCountCounter += properties.survivor[0];
-    //Add the property to the object
-    properties.survivor[1] = properties.survivor[1] + 1;
-
-    //Update the idle gold production,the price of the property, and text
-    updateIdleGold();
-    updatePrice(`survivor`);
-    updateHistoryText(`Got Survivor`);
-    updateButtonValues();
+    buySurvivor();
   }
 });
+function buyClickMultiplier() {
+  gold = gold - properties.clickMultiplier[0];
+  goldSpendCount += properties.clickMultiplier[0];
+  goldSpendCountCounter += properties.clickMultiplier[0];
+  damageOnClick =
+    properties.clickMultiplier[1] +
+    (enemyLevel - 1) * (glassPaneBuff + 1) +
+    lensMakerBuff;
+  //Deal more damage every click, update idle gold (may change stuff),the price, and text
+  properties.clickMultiplier[1] =
+    Number(properties.clickMultiplier[1]) + Number(clickBoostBuff);
+  updateIdleGold();
+  updatePrice(`clickMultiplier`);
+  updateHistoryText(`Got Click Multiplier`);
+  updateButtonValues();
+}
 //Click multiplier is also used to calculate how much damage you deal on click, even if you don't have any
-btnClickMultiplier.addEventListener(`click`, function () {
+btnClickMultiplier.addEventListener(`click`, function (e) {
   //If you have enough gold
+  if (e.ctrlKey) {
+    for (let i = 1; i < 10; i++) {
+      if (gold >= properties.clickMultiplier[0]) {
+        buyClickMultiplier();
+      } else {
+        break;
+      }
+    }
+  }
   if (gold >= properties.clickMultiplier[0]) {
     //Cost
-    gold = gold - properties.clickMultiplier[0];
-    goldSpendCount += properties.clickMultiplier[0];
-    goldSpendCountCounter += properties.clickMultiplier[0];
-    damageOnClick =
-      properties.clickMultiplier[1] +
-      (enemyLevel - 1) * (glassPaneBuff + 1) +
-      lensMakerBuff;
-    //Deal more damage every click, update idle gold (may change stuff),the price, and text
-    properties.clickMultiplier[1] =
-      Number(properties.clickMultiplier[1]) + Number(clickBoostBuff);
-    updateIdleGold();
-    updatePrice(`clickMultiplier`);
-    updateHistoryText(`Got Click Multiplier`);
-    updateButtonValues();
+    buyClickMultiplier();
   }
 });
+function buyDrone() {
+  //"Spend" cash (cash-price)
+  gold = gold - properties.drone[0];
+  goldSpendCount += properties.drone[0];
+  goldSpendCountCounter += properties.drone[0];
+  //Add the property to the object
+  properties.drone[1] = properties.drone[1] + 1;
 
+  //Update the idle gold production,the price of the property, and text
+  updateIdleGold();
+  updatePrice(`drone`);
+  updateHistoryText(`Got Drone`);
+  updateButtonValues();
+}
 btnDrone.addEventListener(`click`, function (e) {
+  if (e.ctrlKey) {
+    for (let i = 1; i < 10; i++) {
+      if (gold >= properties.drone[0]) {
+        buyDrone();
+      } else {
+        break;
+      }
+    }
+  }
   //Do you have enough cash?
   if (gold >= properties.drone[0]) {
-    //"Spend" cash (cash-price)
-    gold = gold - properties.drone[0];
-    goldSpendCount += properties.drone[0];
-    goldSpendCountCounter += properties.drone[0];
-    //Add the property to the object
-    properties.drone[1] = properties.drone[1] + 1;
-
-    //Update the idle gold production,the price of the property, and text
-    updateIdleGold();
-    updatePrice(`drone`);
-    updateHistoryText(`Got Drone`);
-    updateButtonValues();
+    buyDrone();
   }
 });
 
@@ -909,14 +951,6 @@ btnFarmName.addEventListener(`click`, function (e) {
   labelCharactersRemain.style.opacity = 0;
   if (inputFarmName.value === `resetLS`)
     document.querySelector(`.reset`).style.visibility = `visible`;
-  if (inputFarmName.value.toLowerCase() === `slab u vic`) {
-    labelWelcome.textContent = `biljan petrol`;
-    localStorage.setItem(`farmName`, `Biljana`);
-  }
-  if (inputFarmName.value.toLowerCase() === `ambatukam`) {
-    labelWelcome.textContent = `kuzma npc`;
-    localStorage.setItem(`farmName`, `Kuzma`);
-  }
 });
 //To see how many characters you can type in farmName
 inputFarmName.addEventListener(`keyup`, function (e) {
@@ -936,89 +970,133 @@ if (properties.clickMachine[1] >= 1) {
     buttonClicks--;
   }, Number(properties.clickMachine[2]));
 } else clickMachineInterval = undefined;
-btnClickMachine.addEventListener(`click`, function (e) {
-  if (gold >= properties.clickMachine[0]) {
-    gold = gold - properties.clickMachine[0];
-    goldSpendCount += properties.clickMachine[0];
-    goldSpendCountCounter += properties.clickMachine[0];
-    properties.clickMachine[1] += 1;
-    properties.clickMachine[2] =
-      properties.clickMachine[2] - properties.clickMachine[2] * 0.03;
-    clickMachineInterval === undefined
-      ? ``
-      : clearInterval(clickMachineInterval);
-    clickMachineInterval = setInterval(() => {
-      btngold.dispatchEvent(clickEvent);
-      buttonClicks--;
-    }, Number(properties.clickMachine[2]));
-    updatePrice(`clickMachine`);
-    updateHistoryText(`Got Click Machine`);
-    updateButtonValues();
-  }
-});
+function buyTurret() {
+  //"Spend" cash (cash-price)
+  gold = gold - properties.turret[0];
+  goldSpendCount += properties.turret[0];
+  goldSpendCountCounter += properties.turret[0];
+  //Add the property to the object
+  properties.turret[1] = properties.turret[1] + 1;
+
+  //Update the idle gold production,the price of the property, and text
+  updateIdleGold();
+  updatePrice(`turret`);
+  updateHistoryText(`Got Turret`);
+  updateButtonValues();
+}
 btnTurret.addEventListener(`click`, function (e) {
+  if (e.ctrlKey) {
+    for (let i = 1; i < 10; i++) {
+      if (gold >= properties.turret[0]) {
+        buyTurret();
+      } else {
+        break;
+      }
+    }
+  }
   //Do you have enough cash?
   if (gold >= properties.turret[0]) {
-    //"Spend" cash (cash-price)
-    gold = gold - properties.turret[0];
-    goldSpendCount += properties.turret[0];
-    goldSpendCountCounter += properties.turret[0];
-    //Add the property to the object
-    properties.turret[1] = properties.turret[1] + 1;
-
-    //Update the idle gold production,the price of the property, and text
-    updateIdleGold();
-    updatePrice(`turret`);
-    updateHistoryText(`Got Turret`);
-    updateButtonValues();
+    buyTurret();
   }
 });
+function buyClickMachine() {
+  gold = gold - properties.clickMachine[0];
+  goldSpendCount += properties.clickMachine[0];
+  goldSpendCountCounter += properties.clickMachine[0];
+  properties.clickMachine[1] += 1;
+  properties.clickMachine[2] =
+    properties.clickMachine[2] - properties.clickMachine[2] * 0.03;
+  clickMachineInterval === undefined ? `` : clearInterval(clickMachineInterval);
+  clickMachineInterval = setInterval(() => {
+    btngold.dispatchEvent(clickEvent);
+    buttonClicks--;
+  }, Number(properties.clickMachine[2]));
+  updatePrice(`clickMachine`);
+  updateHistoryText(`Got Click Machine`);
+  updateButtonValues();
+}
+btnClickMachine.addEventListener(`click`, function (e) {
+  if (e.ctrlKey) {
+    for (let i = 1; i < 10; i++) {
+      if (gold >= properties.clickMachine[0]) {
+        buyClickMachine();
+      } else {
+        break;
+      }
+    }
+  }
+  if (gold >= properties.clickMachine[0]) {
+    buyClickMachine();
+  }
+});
+function buyMinions() {
+  //"Spend" cash (cash-price)
+  gold = gold - properties.minions[0];
+  goldSpendCount += properties.minions[0];
+  goldSpendCountCounter += properties.minions[0];
+  //Add the property to the object
+  properties.minions[1] = properties.minions[1] + 1;
 
+  //Update the idle gold production,the price of the property, and text
+  updateIdleGold();
+  updatePrice(`minions`);
+  updateHistoryText(`Got Minions`);
+  updateButtonValues();
+}
 btnMinions.addEventListener(`click`, function (e) {
+  if (e.ctrlKey) {
+    for (let i = 1; i < 10; i++) {
+      if (gold >= properties.minions[0]) {
+        buyMinions();
+      } else {
+        break;
+      }
+    }
+  }
   //Do you have enough cash?
   if (gold >= properties.minions[0]) {
-    //"Spend" cash (cash-price)
-    gold = gold - properties.minions[0];
-    goldSpendCount += properties.minions[0];
-    goldSpendCountCounter += properties.minions[0];
-    //Add the property to the object
-    properties.minions[1] = properties.minions[1] + 1;
-
-    //Update the idle gold production,the price of the property, and text
-    updateIdleGold();
-    updatePrice(`minions`);
-    updateHistoryText(`Got Minions`);
-    updateButtonValues();
+    buyMinions();
   }
 });
+function buyChests() {
+  gold = gold - properties.chests[0];
+  updatePrice(`chests`);
+  for (let i = 0; i <= lCoinProperties.chestBoost[2]; i++) {
+    goldSpendCount += properties.chests[0];
+    goldSpendCountCounter += properties.chests[0];
+    chestOpened++;
+    localStorage.setItem(`chestOpened`, chestOpened);
+    //Pick random item from items array, update the price,and text
+    let randomItem = items[randomItemNumber()];
 
+    numberOfItems(randomItem);
+    updateItemHistoryText(`Got ${randomItem}`);
+    btnChests.value = `Buy chest\n ${properties.chests[0].toFixed(1)}`;
+    //Put the item in your inventory
+    inventory.push(randomItem);
+
+    //Local storage scary
+    localStorage.setItem(`inventory`, JSON.stringify(inventory));
+    localStorage.setItem(`counts`, JSON.stringify(counts));
+    updateButtonValues();
+    //ITEM FUNCTIONS!!!(below)
+    itemFunctions(randomItem);
+  }
+}
 //The fun part!
 btnChests.addEventListener(`click`, function (e) {
+  if (e.ctrlKey) {
+    for (let i = 1; i < 10; i++) {
+      if (gold >= properties.chests[0]) {
+        buyChests();
+      } else {
+        break;
+      }
+    }
+  }
   //If you can buy it
   if (gold >= properties.chests[0]) {
-    gold = gold - properties.chests[0];
-    updatePrice(`chests`);
-    for (let i = 0; i <= lCoinProperties.chestBoost[2]; i++) {
-      goldSpendCount += properties.chests[0];
-      goldSpendCountCounter += properties.chests[0];
-      chestOpened++;
-      localStorage.setItem(`chestOpened`, chestOpened);
-      //Pick random item from items array, update the price,and text
-      let randomItem = items[randomItemNumber()];
-
-      numberOfItems(randomItem);
-      updateItemHistoryText(`Got ${randomItem}`);
-      btnChests.value = `Buy chest\n ${properties.chests[0].toFixed(1)}`;
-      //Put the item in your inventory
-      inventory.push(randomItem);
-
-      //Local storage scary
-      localStorage.setItem(`inventory`, JSON.stringify(inventory));
-      localStorage.setItem(`counts`, JSON.stringify(counts));
-      updateButtonValues();
-      //ITEM FUNCTIONS!!!(below)
-      itemFunctions(randomItem);
-    }
+    buyChests();
   }
 });
 //Boss fight button

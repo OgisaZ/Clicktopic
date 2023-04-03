@@ -1,7 +1,8 @@
 'use strict';
 
 const boldenaFont = document.querySelectorAll(`.boldena-font`);
-let changeFont = 0;
+let changeFont = Number(localStorage.getItem(`changeFont`)) || 3;
+if (changeFont >= 4 || changeFont < 0) changeFont = 3;
 //Labels
 const labelFontChange = document.querySelector(`.font-change-text`);
 const labelgoldNumber = document.querySelector(`.gold`);
@@ -186,7 +187,7 @@ let bosses = JSON.parse(localStorage.getItem(`bosses`)) || [
   [`Kukri`, false],
   [`ByBaj`, false],
   [`Kharton`, false],
-  [`Ivca`, false],
+  [`IV-CHAA`, false],
   [`Jovan Fajnisevic`, false],
 ];
 //Current enemy health
@@ -249,7 +250,7 @@ let properties = JSON.parse(localStorage.getItem(`properties`)) || {
 };
 let lCoinProperties = JSON.parse(localStorage.getItem(`lCoinProperties`)) || {
   idleBoost: [2, 0, 0, 0],
-  clickBoost: [2, 0, 1, 0],
+  clickBoost: [1, 0, 1, 0],
   afkBoost: [1, 0, 1, 0],
   chestBoost: [2, 0, 0, 0],
 };
@@ -288,6 +289,10 @@ const welcomeText = [
   `What's up`,
   `Thanks`,
   `Ready, Set`,
+  `Go get 'em`,
+  `Sight for sore eyes`,
+  `Back again`,
+  `Game on`,
 ];
 welcomeText.textContent = ``;
 //Display on screen
@@ -321,6 +326,11 @@ setInterval(
     }`),
   3000
 );
+if (timesLooped >= 1) {
+  document.querySelector(`.divider`).style.opacity = 1;
+} else {
+  document.querySelector(`.divider`).style.opacity = 0;
+}
 
 function addCurrency(property) {
   const suffixes = [
@@ -339,7 +349,13 @@ function addCurrency(property) {
     `undecillion`,
     `duodecillion`,
     `tredecillion`,
-    `whatthehellion`,
+    `quattuordecillion`,
+    `quindecillion`,
+    `sexdecillion`,
+    `septendecillion`,
+    `octodecillion`,
+    `novemdecillion`,
+    `virgintillion`,
   ];
   const magnitude = Math.floor(Math.log10(property) / 3);
   const divider = Math.pow(10, magnitude * 3);
@@ -349,15 +365,22 @@ function addCurrency(property) {
     style: `currency`,
     currency: `USD`,
   });
-  if (formatter.format(shortNum) + ` ` + suffix === `$NaN undefined`) {
+  //Problem occurs when you have 0 gold, so fixed it
+  if (
+    formatter.format(shortNum) + ` ` + suffix === `$NaN undefined` &&
+    gold <= 0
+  ) {
     return formatter.format(0);
   }
-  if (
-    formatter.format(shortNum) + ` ` + suffix ===
-    shortNum + ` ` + undefined
-  ) {
-    return formatter.format(shortNum) + ` alot-ellion`;
+  //When gold is infinity
+  if (formatter.format(shortNum) + ` ` + suffix === `$NaN undefined`) {
+    return `Infinity and Beyond!`;
   }
+  //When gold has surpassed the available suffixes, just write alotellion
+  if (formatter.format(shortNum) + ` ` + suffix === `$${shortNum} undefined`) {
+    return formatter.format(shortNum) + ` alotellion`;
+  }
+
   return formatter.format(shortNum) + ` ` + suffix;
 }
 let k = 0;
@@ -389,7 +412,7 @@ function gameTextChanger() {
     }.`;
   }
   if (globalEnemyKillCount >= 250) {
-    labelWelcome.textContent = `There is talk of erecting a new statue.I wonder who it's of.`;
+    labelWelcome.textContent = `There is talk of erecting a new statue.`;
   }
   if (globalEnemyKillCount >= 400) {
     labelWelcome.textContent = `Some people are asking if ${
@@ -432,9 +455,6 @@ function gameTextChanger() {
   }
 
   //Little easter eggs
-  if (inputFarmName.value.toLowerCase() === `ambatukam`) {
-    labelWelcome.textContent = `Evo ti brate ambatukam aaa ambasiiin`;
-  }
   if (inputFarmName.value === `resetLS`) {
     labelWelcome.textContent = `Resetting will delete EVERYTHING!`;
   }
@@ -631,9 +651,11 @@ function infoModals(string) {
     clearInterval(statsInterval);
     let htmlInfo = `<br>Are you sure you want to <span style="letter-spacing: 4px;">LOOP</span>? Looping will erase EVERYTHING. You will gain ${Number(
       calcLCoinGain().toFixed(2)
-    )} LCoins (You will have ${
+    )} LCoins (You will have ${(
       Number(calcLCoinGain().toFixed(2)) + Number(lCoins.toFixed(2))
-    } LCoins). With LCoins you will be able to purchase Boosters. Boosters will make it easier for you to earn gold and deal damage. Proceed?<br><br>`;
+    ).toFixed(
+      2
+    )} LCoins). With LCoins you will be able to purchase Boosters. Boosters will make it easier for you to earn gold and deal damage. Proceed?<br><br>`;
     btnLoopYes.style.visibility = `visible`;
     btnLoopNo.style.visibility = `visible`;
     modalInfoText.innerHTML = htmlInfo;
@@ -653,25 +675,25 @@ function infoModals(string) {
     modalItem.style.backgroundColor = `#3f7d9e`;
     modalHelp.style.backgroundColor = `#8ac4e3`;
     clearInterval(statsInterval);
-    let htmlInfo = `<br>Hello! Welcome to Clicktopic. Clicktopic is a Idle Game. Idle Games are games where progress can be achieved even without actively playing the game. In the beginning, you will have to be actively playing, to earn gold.<br><br>
+    let htmlInfo = `<br>Hello! Welcome to Clicktopic. Clicktopic is a Idle Game. Idle Games are games where progress can be achieved even without actively playing the game. In the beginning, you will have to be actively playing, to earn gold.<br><br><hr class="divider"><br>
     Click To Earn!
-    <br><br>Clicking on the big button in the center will give you gold. How much gold you get depends on some parameters. Clicking the button also loweres the "Health" of the anomaly. The anomaly's name and health are displayed on the button. When anomaly health reaches 0, you will earn some bonus gold for defeating them.<br><br>
+    <br><br>Clicking on the big button in the center will give you gold. How much gold you get depends on some parameters. Clicking the button also loweres the "Health" of the anomaly. The anomaly's name and health are displayed on the button. When anomaly health reaches 0, you will earn some bonus gold for defeating them.<br><br><hr class="divider"><br>
     Spending Gold!<br><br>
-    With the gold you've collected, you can buy "Properties". With properties, you will earn gold and deal damage without having to press the button. The more properties you have the more expensive they are, but also the more they will earn and do damage. Properties' damage per second (also earns gold per second) and what they do, can be seen on the "Properties" tab in the bottom right corner.<br><br>
+    With the gold you've collected, you can buy "Properties". With properties, you will earn gold and deal damage without having to press the button. The more properties you have the more expensive they are, but also the more they will earn and do damage. Properties' damage per second (also earns gold per second) and what they do, can be seen on the "Properties" tab in the bottom right corner. <span style="color:#dbb704;">PRO-TIP: Holding CTRL whilst buying a property will buy up to 10 of that property! (Also works with chests!)</span><br><br><hr class="divider"><br>
     Unboxing Items!<br><br>
-    Chests are special properties that you can buy, and on every purchase will give you items. Each item can be stacked infinitely, meaning that duplicate items aren't useless, but actually just boost that items function. You can see what each item does in the "Item Functions" tab in the bottom right corner. Items are an amazing way to earn bonuses, and without them, you can't go as far as you can with them.<br><br>
+    Chests are special properties that you can buy, and on every purchase will give you items. Each item can be stacked infinitely, meaning that duplicate items aren't useless, but actually just boost that items function. You can see what each item does in the "Item Functions" tab in the bottom right corner. Items are an amazing way to earn bonuses, and without them, you can't go as far as you can with them.<br><br><hr class="divider"><br>
     Levelling!<br><br>
-    Levels are an indication of your level, and anomaly level. On level up, you will gain more damage on click, but the anomalies get stronger. The stronger the anomaly, the more health they have, but also the more gold they drop when they are defeated.<br><br>
+    Levels are an indication of your level, and anomaly level. On level up, you will gain more damage on click, but the anomalies get stronger. The stronger the anomaly, the more health they have, but also the more gold they drop when they are defeated.<br><br><hr class="divider"><br>
     Bosses!<br><br>
-    After reaching the anomaly defeat requirements for the current level (see the requirement by holding cursor over level number), a button will appear. Hovering over the button will tell you how much health the boss has, and how much time you have to defeat them. If you do not defeat the boss on time, the level requirements are reset and you will have to defeat that much more anomalies to fight them again. Defeating an anomaly gives you and the anomalies a level up, gives you 2 items, and some gold.<br><br>
+    After reaching the anomaly defeat requirements for the current level (see the requirement by holding cursor over level number), a button will appear. Hovering over the button will tell you how much health the boss has, and how much time you have to defeat them. If you do not defeat the boss on time, the level requirements are reset and you will have to defeat that much more anomalies to fight them again. Defeating a boss gives you and the anomalies a level up, gives you 2 items, and some gold.<br><br><hr class="divider"><br>
     AFK earning<br><br>
-    While the site is closed, you will still earn gold! How much you earn is based on your idle DPS, and how long you've been away. Coming back to the site will earn you the appropriate amount of gold, as if you were playing the whole time. But you will earn more gold by having the site open, because some of your items will boost your idle DPS only while the site is opened.<br><br>
+    While the site is closed, you will still earn gold! How much you earn is based on your idle DPS, and how long you've been away. Coming back to the site will earn you the appropriate amount of gold, as if you were playing the whole time. But you will earn more gold by having the site open, because some of your items will boost your idle DPS only while the site is opened.<br><br><hr class="divider"><br>
     Prefixes<br><br>
-    After reaching level 4, you might see some special anomalies. There is a chance for anomalies to have a prefix, meaning that they have special powers against you. Some powers are as simple as more anomaly health, but some almost entirely disable your idle income and are only weak to clicking damage. These anomalies can be countered by buying the Click Machine property.<br><br>
+    After reaching level 4, you might see some special anomalies. There is a chance for anomalies to have a prefix, meaning that they have special powers against you. Some powers are as simple as more anomaly health, but some almost entirely disable your idle income and are only weak to clicking damage. These anomalies can be countered by buying the Click Machine property.<br><br><hr class="divider"><br>
     Let's Do It Again!<br><br>
-    After reaching level 4, you will have access to looping. Looping is a way for you to earn LCoins. In exchange you lose all of your progress. LCoins can be used to buy boosters, so you will earn gold much more quickly than before. How much LCoins you get is based on how much properties you have, how many items you have, and your current level. Looping is recommended when you are stuck on some boss, or when you are gaining 2 or more LCoins.<br><br>
+    After reaching level 4, you will have access to looping. Looping is a way for you to earn LCoins. In exchange you lose all of your progress. LCoins can be used to buy boosters, so you will earn gold much more quickly than before. How much LCoins you get is based on how much properties you have, how many items you have, and your current level. Looping is recommended when you are stuck on some boss, or when you are gaining 2 or more LCoins. Pressing the <span style="letter-spacing: 4px;">LOOP</span> button will tell you how much LCoins you will be earning. If your LCoin gain is low, try buying some properties and items. LCoins do not include your current gold amount, so spend it all before looping.<br><br><hr class="divider"><br>
     Saving Your Progress<br><br>
-    If you want to save your progress, pressing the "Save Code" button in the bottom left will save a code to your clipboard. With this code you can press "Load Code" and put the code in the pop up window. After a few seconds your progress will be loaded.<br><br>
+    If you want to save your progress, pressing the "Save Code" button in the bottom left will save a code to your clipboard. With this code you can press "Load Code" and put the code in the pop up window. After a few seconds your progress will be loaded. <br>(It's a super long code!)<br><br><hr class="divider"><br>
     Made by OgisaZ.<br>
     <a href="https://github.com/OgisaZ" target="_blank">Link to Github page</a>`;
     modalInfoText.innerHTML = htmlInfo;
@@ -721,18 +743,21 @@ function updateFontText(string) {
   document.querySelector(`.gold-styling`).style.fontSize = `25px`;
   document.querySelector(`.gold`).style.fontSize = `3vw`;
 }
-btnFontChange.addEventListener(`click`, function () {
+
+function changeFontFunc() {
   if (changeFont === 0) {
     boldenaFont.forEach(element => {
       element.style.fontFamily = `'Source Sans Pro', sans-serif`;
       updateFontText(`Source Sans Pro`);
     });
+    localStorage.setItem(`changeFont`, changeFont);
     changeFont++;
   } else if (changeFont === 1) {
     boldenaFont.forEach(e => (e.style.fontFamily = `'Montserrat', sans-serif`));
     updateFontText(`Montserrat`);
     document.querySelector(`.gold-styling`).style.fontSize = `20px`;
     document.querySelector(`.gold`).style.fontSize = `2vw`;
+    localStorage.setItem(`changeFont`, changeFont);
     changeFont++;
   } else if (changeFont === 2) {
     boldenaFont.forEach(e => {
@@ -742,10 +767,14 @@ btnFontChange.addEventListener(`click`, function () {
     updateFontText(`Roboto Slab`);
     document.querySelector(`.gold-styling`).style.fontSize = `20px`;
     document.querySelector(`.gold`).style.fontSize = `2vw`;
+    localStorage.setItem(`changeFont`, changeFont);
     changeFont++;
   } else if (changeFont === 3) {
     boldenaFont.forEach(e => (e.style.fontFamily = `Boldena`));
     updateFontText(`Boldena`);
+    localStorage.setItem(`changeFont`, changeFont);
     changeFont = 0;
   }
-});
+}
+changeFontFunc();
+btnFontChange.addEventListener(`click`, changeFontFunc);

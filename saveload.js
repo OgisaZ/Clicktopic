@@ -36,6 +36,7 @@ saveCode.addEventListener(`click`, function () {
     goldCollectCount,
     buttonClicks,
     chestOpened,
+    changeFont,
   ];
   const saveStuffObjects = [
     JSON.stringify(properties),
@@ -158,6 +159,7 @@ loadCode.addEventListener(`click`, function () {
     goldCollectCount = fullArrayLoad[0][22];
     buttonClicks = fullArrayLoad[0][23];
     chestOpened = fullArrayLoad[0][24];
+    changeFont = fullArrayLoad[0][25] - 1;
     properties = fullArrayLoad[1];
     lCoinProperties = fullArrayLoad[2];
     inventory = fullArrayLoad[3];
@@ -191,6 +193,7 @@ loadCode.addEventListener(`click`, function () {
     localStorage.setItem(`goldCollectCount`, goldCollectCount);
     localStorage.setItem(`buttonClicks`, buttonClicks);
     localStorage.setItem(`chestOpened`, chestOpened);
+    localStorage.setItem(`changeFont`, changeFont);
     localStorage.setItem(`properties`, JSON.stringify(properties));
     localStorage.setItem(`lCoinProperties`, JSON.stringify(lCoinProperties));
     localStorage.setItem(`inventory`, JSON.stringify(inventory));
