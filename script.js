@@ -88,13 +88,16 @@ window.onclick = function (e) {
   }
 };
 //Used with setInterval, to see when to popup the loop button
+
 function loopCheck() {
   if (enemyLevel >= 4) {
     btnLoop.style.visibility = `visible`;
     btnLoop.style.opacity = 1;
   }
 }
+
 let loopCheckInterval = setInterval(loopCheck, 2000);
+
 function enemyPicker() {
   //Take a random item from 0 to the length of enemies array
 
@@ -206,7 +209,7 @@ function bossPicker(bossKilled = false) {
       localStorage.setItem(`bossesKillCountCounter`, bossesKillCountCounter);
       localStorage.setItem(`bosses`, JSON.stringify(bosses));
     }
-    //If you have killed the final boss (looping)
+    //If you have defeated the final boss (looping)
     if (bosses[bosses.length - 1][1]) {
       for (const boss of bosses) {
         //Put every boss back to false,as if you haven't defeated them, so they can loop all over again
@@ -475,14 +478,14 @@ function updateItemHistoryText(string) {
     labelItemHistoryText.style.transition = `1s`;
   }, 1500);
 }
-function updateIdleGold() {
-  //Idle gold is summing up what every property makes every 33 millisecs
-  //Horrible
 
-  idleGold = properties.survivor[2] * properties.survivor[1];
-  idleGold = idleGold + properties.drone[2] * properties.drone[1];
-  idleGold = idleGold + properties.turret[2] * properties.turret[1];
-  idleGold = idleGold + properties.minions[2] * properties.minions[1];
+function updateIdleGold() {
+  idleGold = 0;
+  for (const mov in properties) {
+    if (mov !== `clickMachine` && mov !== `clickMultiplier`)
+      idleGold = properties[mov][2] * properties[mov][1] + idleGold;
+  }
+
   localStorage.setItem(`idleGold`, idleGold);
   if (triTipBuff) {
     idleGold = idleGold * 2;
@@ -603,6 +606,9 @@ function automatedDamage() {
     enemyHealth = enemyHealth - idleGold;
   }
 }
+
+let automatedDamageInterval = setInterval(automatedDamage, 33);
+
 //Has to be undefined for calculations to work
 let calcDPSTimeout;
 function calcDPS() {
@@ -726,10 +732,10 @@ updateIdleGold();
 
 // I made them variables so i could cancel them, and also looks better without the setInterval thing on the whole function
 let updategoldCountInterval = setInterval(updategoldCount, 33);
-let automatedDamageInterval = setInterval(automatedDamage, 33);
 
 let displayBossInterval = setInterval(displayBoss, 33);
 let calcDPSInterval = setInterval(calcDPS, 33);
+
 let timeAwayInterval = setInterval(timeAway, 2200);
 
 function updatePrice(property) {
@@ -1169,7 +1175,7 @@ btnLoopYes.addEventListener(`click`, function () {
   //This a is used for calculating later how many LCoins you will have
   let a = calcLCoinGain();
   clearStatsModal();
-  //Reset all properties back to default (Minions would bug out if i used propertyOriginal, so i did it like this);
+  //Reset all properties back to default
   properties = {
     survivor: [20, 0, 0.003, 0],
     clickMultiplier: [40, 1, 0, 0],
